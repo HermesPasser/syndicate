@@ -34,12 +34,12 @@ def parse_rss(text, url=''):
     for item in channel.findall('item'):
         dict_item = new_feed_item(
             item.find('title').text,
+            item.find('description').text,
             item.find('link').text,
             item.find('guid').text,
             # since for now were listing it on js, maybe the format should match to
             # make able to be parsed easily to a js date
             item.find('pubDate').text,
-            item.find('description').text
         )
         append_item_to_feed(channel_name, dict_item)
     return channel_name
