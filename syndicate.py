@@ -6,6 +6,13 @@ import json
 FILENAME = 'db.json'
 CONTENTS = dict()
 
+# FIXME: it seems it doesnt add a second channel to the feed
+# FIXME: it seems guid is recovering date instead
+
+def drop_all():
+    global CONTENTS
+    CONTENTS = {}
+
 def fetch_rss(url):
     # TODO: error handling when is not 200
     raw_text = ''
