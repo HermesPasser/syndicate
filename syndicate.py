@@ -5,9 +5,6 @@ import certifi
 import json
 import uuid
 
-# TODO: is better to create a folder and set each feed as a file 
-# inside
-
 
 def uuid_from_url(url):
     return str(uuid.uuid3(uuid.NAMESPACE_URL, url))
