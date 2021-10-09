@@ -1,6 +1,7 @@
 import xml.etree.ElementTree as ET
 import urllib.request as req
 from pathlib import Path
+import certifi
 import json
 # TODO: is better to create a folder and set each feed as a file 
 # inside
@@ -18,9 +19,8 @@ def drop_all():
 
 def fetch_rss(url):
     # TODO: error handling when is not 200
-    # like ssl erros 
     raw_text = ''
-    with req.urlopen(url) as response:
+    with req.urlopen(url, cafile=certifi.where()) as response:
         raw_text = response.read()
 
     return raw_text
