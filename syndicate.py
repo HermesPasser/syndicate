@@ -10,6 +10,10 @@ import uuid
 def uuid_from_url(url):
     return str(uuid.uuid3(uuid.NAMESPACE_URL, url))
 
+class FeedError(Exception):
+    def __init__(msg):
+        super(msg)
+
 """
     channels.json format:
 {
@@ -40,6 +44,9 @@ class ChannelList:
             
         if self.channel_list_file.exists():
             self._load_channels()
+
+        for channel_id in self.channel_contents.keys():
+            self._load_feed(channel_id)
     
     def _load_channels(self):
         file_exits = self.channel_list_file.exists()
@@ -50,6 +57,22 @@ class ChannelList:
                 self.channel_contents = json.loads(file.read())
         except json.decoder.JSONDecodeError:
             pass
+
+    def _load_feed(self, channel_id):
+        path = self.conf_dir.joinpath(channel_id + '.json')
+
+        if not path.exists():
+            raise FeedError(f"Not feed file found in {str(path)}")
+
+        try:
+            with path.open('r+') as file: 
+                self.feed[channel_id] = json.loads(file.read())
+        except json.decoder.JSONDecodeError:
+            # TODO: _load_channels just pass and act like is a empty
+            # file if the parsing fail, maybe we should just delete
+            # the file and say no items/feed was create to make
+            # it work in a similar fashion
+            raise FeedError(f"Bad formated feed file {str(path)}")
 
     def close(self):
         with self.channel_list_file.open('a+') as file:
