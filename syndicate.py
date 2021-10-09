@@ -1,4 +1,5 @@
 import xml.etree.ElementTree as ET
+from datetime import datetime
 import urllib.request as req
 from pathlib import Path
 import certifi
@@ -122,6 +123,24 @@ feed = ChannelList()
 #     global CONTENTS
 #     CONTENTS = {}
 
+def mili_to_date(float):
+    return datetime.fromtimestamp(float)
+
+def str_date_to_mili(str):
+    """Construct a POSIX timestamp from a date string.
+
+    Accepted format: %a, %d %b %Y %H:%M:%S %z,
+    """
+    # I'm not sure if all feeds follow this structure
+    # If not, put some regex to figure out wich type
+    # is and then add more types
+    date = datetime.strptime(str,"%a, %d %b %Y %H:%M:%S %z")
+
+    # since datetime is not resializable, let store the 
+    # timestamp and convert it back when is need
+    return datetime.timestamp(date)
+
+
 def fetch_rss(url):
     # TODO: error handling when is not 200
     raw_text = ''
@@ -152,6 +171,6 @@ def parse_rss(text, url):
             item.find('guid').text,
             # since for now were listing it on js, maybe the format should match to
             # make able to be parsed easily to a js date
-            item.find('pubDate').text,
+            str_date_to_mili(item.find('pubDate').text),
             ch_id
         )
