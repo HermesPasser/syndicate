@@ -1,9 +1,12 @@
 import xml.etree.ElementTree as ET
 import urllib.request as req
-from os.path import exists
+from pathlib import Path
 import json
+# TODO: is better to create a folder and set each feed as a file 
+# inside
 
-FILENAME = 'db.json'
+conf_dir = Path.home().joinpath('syndicate')
+db_file = conf_dir.joinpath('db.json')
 CONTENTS = dict()
 
 # FIXME: it seems it doesnt add a second channel to the feed
@@ -15,6 +18,7 @@ def drop_all():
 
 def fetch_rss(url):
     # TODO: error handling when is not 200
+    # like ssl erros 
     raw_text = ''
     with req.urlopen(url) as response:
         raw_text = response.read()
@@ -85,8 +89,8 @@ def append_channel(channel):
 
 
 def close_db():
-    global FILENAME, CONTENTS
-    with open(FILENAME, 'a+') as file:
+    global db_file, CONTENTS
+    with db_file.open('a+') as file:
         txt = json.dumps(CONTENTS)
         file.truncate(0)
         file.write(txt)
@@ -101,12 +105,17 @@ def open_db():
     #               ...
     #           }
     #       }
-    global FILENAME, CONTENTS
-    if not exists(FILENAME):
+    
+    global db_file, conf_dir, CONTENTS
+
+    if not conf_dir.exists():
+        conf_dir.mkdir()
+    
+    if not db_file.exists():
         print('no db found')
     else:
         try:
-            with open(FILENAME, 'a+') as file:
+            with db_file.open() as file: 
                 CONTENTS = json.loads(file.read())
         except json.decoder.JSONDecodeError:
             pass
