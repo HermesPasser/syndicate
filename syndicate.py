@@ -3,19 +3,127 @@ import urllib.request as req
 from pathlib import Path
 import certifi
 import json
+import uuid
+
 # TODO: is better to create a folder and set each feed as a file 
 # inside
 
-conf_dir = Path.home().joinpath('syndicate')
-db_file = conf_dir.joinpath('db.json')
-CONTENTS = dict()
+
+def uuid_from_url(url):
+    return str(uuid.uuid3(uuid.NAMESPACE_URL, url))
+
+"""
+    channels.json format:
+{
+    <uuid()>: { title: '', url: '', id: uuid() },
+    ...
+}
+
+    uuid(some_channel):
+{
+    <id>: {title: '', content: '', read: false, url: '', id: '', link: '', date: ''},
+    ...
+}
+"""
+
+class ChannelList:
+    def __init__(self):
+        self.conf_dir = Path.home().joinpath('syndicate')
+        self.channel_list_file = self.conf_dir.joinpath('channels.json')
+        self.channel_contents = dict()
+        self.feed = dict() # [channel_id][item_id]
+
+    def open(self):
+        self._create_path()
+
+    def _create_path(self):
+        if not self.conf_dir.exists():
+            self.conf_dir.mkdir()
+            
+        if self.channel_list_file.exists():
+            self._load_channels()
+    
+    def _load_channels(self):
+        file_exits = self.channel_list_file.exists()
+        mode = 'r+' if file_exits else 'w+'
+
+        try:
+            with self.channel_list_file.open(mode) as file: 
+                self.channel_contents = json.loads(file.read())
+        except json.decoder.JSONDecodeError:
+            pass
+
+    def close(self):
+        with self.channel_list_file.open('a+') as file:
+            txt = json.dumps(self.channel_contents)
+            file.truncate(0)
+            file.write(txt)
+
+        for item_id, item in self.feed.items():
+            filename = self.conf_dir.joinpath(item_id + '.json')
+            with filename.open('a+') as file:
+                file.truncate(0)
+                file.write(json.dumps(item))
+
+    def add_channel(self, title, url):
+        if self.channel_contents.get(title, False):
+            return
+        
+        id = uuid_from_url(url)
+        self.channel_contents[id] = {'title': title, 'url': url, 'syndycate_id': id}
+        self._create_channel_file(id)
+        return id
+
+    def _create_channel_file(self, id):
+        # TODO: this is confusing so is better we creat a new clas
+        # that handles the file pointer and its contents
+
+        path = self.conf_dir.joinpath(id + '.json')
+        with path.open('w') as _:
+            pass
+        
+        self.feed[id] = {}
+
+    def add_feed_item(self, title, content, link, id, date, channel_id):
+        if not self.channel_contents.get(channel_id, False):
+            # maybe throw exception here or return false...
+            return
+
+        # TODO: maybe check if the item already exists
+
+        item = {
+            'title': title,
+            'link': link,
+            'id': id,
+            'date': date,
+            'read': False,
+            'content': content,
+            'channel': channel_id # not really necesary since its the filename
+        }
+
+        self.feed[channel_id][id] = item
+        return item
+
+    def mark_feed_item_as(self, channel_id, id, is_read):
+        if not self.channel_contents.get(channel_id, False):
+            return
+        
+        if not self.channel_contents[channel_id].get(id, False):
+            return
+        
+        item = self.feed[channel_id][id]
+        item['read'] = is_read
+
+
+feed = ChannelList()
 
 # FIXME: it seems it doesnt add a second channel to the feed
 # FIXME: it seems guid is recovering date instead
 
-def drop_all():
-    global CONTENTS
-    CONTENTS = {}
+# Do i really need a func to destroy everything? maybe for testing...
+# def drop_all():
+#     global CONTENTS
+#     CONTENTS = {}
 
 def fetch_rss(url):
     # TODO: error handling when is not 200
@@ -26,17 +134,21 @@ def fetch_rss(url):
     return raw_text
 
 
-def parse_rss(text, url=''):
+
+def parse_rss(text, url):
     # this is the happy path, we need to handle malformated xml
+    global feed
 
     root = ET.fromstring(text)
     channel = root.find('channel')
     channel_name = channel.find('title').text
-    item = new_channel(channel_name, url) # feed's url, not the embeded link inside of it
-    append_channel(item)
+    ch_id = feed.add_channel(channel_name, url) # feed's url, not the embeded link inside of it
 
+    # FIXME: hack to não explode db with too many channels
+    # remove and add way to fetch x last from the db later
+    i = 1
     for item in channel.findall('item'):
-        dict_item = new_feed_item(
+        feed.add_feed_item(
             item.find('title').text,
             item.find('description').text,
             item.find('link').text,
@@ -44,79 +156,5 @@ def parse_rss(text, url=''):
             # since for now were listing it on js, maybe the format should match to
             # make able to be parsed easily to a js date
             item.find('pubDate').text,
+            ch_id
         )
-        append_item_to_feed(channel_name, dict_item)
-    return channel_name
-
-
-def mark_read(channel_name, id, is_read):
-    global CONTENTS
-    CONTENTS[channel_name]['feed'][id]['read'] = is_read
-
-
-def new_feed_item(name, content, link, id, data):
-    i = dict()
-    i['name'] = name
-    i['link'] = link
-    i['id'] = id
-    i['data'] = data
-    i['read'] = False
-    i['content'] = content
-    return i
-
-
-def append_item_to_feed(channel_name, item):
-    global CONTENTS
-
-    ch = CONTENTS.get(channel_name, None)
-    if ch is None:
-        return
-    # i'm not testing if the item already existis
-    ch['feed'][item['id']] = item
-
-
-def new_channel(name, url):
-    c = dict()
-    c['name'] = name
-    c['url'] = url
-    c['feed'] = dict()
-    return c
-
-
-def append_channel(channel):
-    global CONTENTS
-    CONTENTS[channel['name']] =  channel
-
-
-def close_db():
-    global db_file, CONTENTS
-    with db_file.open('a+') as file:
-        txt = json.dumps(CONTENTS)
-        file.truncate(0)
-        file.write(txt)
-
-
-def open_db():
-    #       <channel name> { 
-    #           name: '', 
-    #           url: '', 
-    #           feed: {
-    #               <id>: {name: '', content: '', read: false, url: '', id: '', link: '', data: ''}
-    #               ...
-    #           }
-    #       }
-    
-    global db_file, conf_dir, CONTENTS
-
-    if not conf_dir.exists():
-        conf_dir.mkdir()
-    
-    if not db_file.exists():
-        print('no db found')
-    else:
-        try:
-            with db_file.open() as file: 
-                CONTENTS = json.loads(file.read())
-        except json.decoder.JSONDecodeError:
-            pass
-
