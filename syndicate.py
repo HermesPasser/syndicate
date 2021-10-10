@@ -202,11 +202,10 @@ def parse_rss(text, url):
     root = ET.fromstring(text)
     channel = root.find('channel')
     channel_name = channel.find('title').text
-    ch_id = feed.add_channel(channel_name, url) # feed's url, not the embeded link inside of it
-
-    # FIXME: hack to não explode db with too many channels
-    # remove and add way to fetch x last from the db later
-    i = 1
+    ch_id = uuid_from_url(url)
+    if not feed.channel_exists(ch_id):
+        ch_id = feed.add_channel(channel_name, url) # feed's url, not the embeded link inside of it
+    
     for item in channel.findall('item'):
         feed.add_feed_item(
             # TODO: can't figure how get <content:encoded> tag with etree, so we're going with description instead
