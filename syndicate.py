@@ -12,8 +12,7 @@ def uuid_from_url(url):
     return str(uuid.uuid3(uuid.NAMESPACE_URL, url))
 
 class FeedError(Exception):
-    def __init__(msg):
-        super(msg)
+    pass
 
 """
     channels.json format:
