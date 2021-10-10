@@ -7,7 +7,6 @@ import copy
 import json
 import uuid
 
-
 def uuid_from_url(url):
     return str(uuid.uuid3(uuid.NAMESPACE_URL, url))
 
@@ -110,7 +109,7 @@ class ChannelList:
         return id
 
     def _create_channel_file(self, id):
-        # TODO: this is confusing so is better we creat a new clas
+        # TODO: this is confusing so is better we create a new class
         # that handles the file pointer and its contents
 
         path = self.conf_dir.joinpath(id + '.json')
@@ -167,12 +166,6 @@ class ChannelList:
 feed = ChannelList()
 
 # FIXME: it seems it doesnt add a second channel to the feed
-# FIXME: it seems guid is recovering date instead
-
-# Do i really need a func to destroy everything? maybe for testing...
-# def drop_all():
-#     global CONTENTS
-#     CONTENTS = {}
 
 def mili_to_date(float):
     return datetime.fromtimestamp(float)
@@ -216,12 +209,11 @@ def parse_rss(text, url):
     i = 1
     for item in channel.findall('item'):
         feed.add_feed_item(
+            # TODO: can't figure how get <content:encoded> tag with etree, so we're going with description instead
             item.find('title').text,
             item.find('description').text,
             item.find('link').text,
             item.find('guid').text,
-            # since for now were listing it on js, maybe the format should match to
-            # make able to be parsed easily to a js date
             str_date_to_mili(item.find('pubDate').text),
             ch_id
         )
