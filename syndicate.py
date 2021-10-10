@@ -163,9 +163,8 @@ class ChannelList:
         item['read'] = is_read
 
 
-feed = ChannelList()
-
 # FIXME: it seems it doesnt add a second channel to the feed
+# i think it does not anymore, check it out
 
 def mili_to_date(float):
     return datetime.fromtimestamp(float)
@@ -195,9 +194,8 @@ def fetch_rss(url):
 
 
 
-def parse_rss(text, url):
+def parse_rss(feed, text, url):
     # this is the happy path, we need to handle malformated xml
-    global feed
 
     root = ET.fromstring(text)
     channel = root.find('channel')

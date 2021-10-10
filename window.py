@@ -1,12 +1,12 @@
-from syndicate import feed
 from PyQt5 import Qt, QtCore, QtGui, QtWidgets, uic
 from threading import Thread
 import time
 
 class Window(Qt.QMainWindow):
 
-	def __init__(self, *args, **kwargs):
+	def __init__(self, feed, *args, **kwargs):
 		super().__init__(*args, **kwargs)
+		self.feed = feed
 		self.channel_list_metadata = [] # [(id, title), ...]
 		self.list_item_metadata = [] # [{}, ...]
 		self._initialize_component()
@@ -28,7 +28,7 @@ class Window(Qt.QMainWindow):
 		self.list_item.itemSelectionChanged.connect(self._item_selected)
 
 	def _load_channel(self):
-		self.channel_list_metadata = [(id, item['title']) for id, item in feed._channel_contents.items()]
+		self.channel_list_metadata = [(id, item['title']) for id, item in self.feed._channel_contents.items()]
 		for _, title in self.channel_list_metadata:
 			self._add_channel(title)
 
@@ -43,7 +43,7 @@ class Window(Qt.QMainWindow):
 		# TODO: pass which tab, so it now were should load
 		# when we add multiple tabs support
 		self.list_item.clear()
-		self.list_item_metadata = [item for _, item in feed.get_feed(channel_id).items()]
+		self.list_item_metadata = [item for _, item in self.feed.get_feed(channel_id).items()]
 		for item in self.list_item_metadata:
 			self._add_list_item(item['title'], not item['read'])
 
@@ -65,7 +65,7 @@ class Window(Qt.QMainWindow):
 
 	def _set_item_status(self, item, metaitem, is_read):
 		"""Update the read mark in the engine and in the UI"""
-		feed.mark_feed_item_as(metaitem['channel'], metaitem['id'], is_read)
+		self.feed.mark_feed_item_as(metaitem['channel'], metaitem['id'], is_read)
 		
 		if is_read:
 			self._mark_list_item_read(item)
