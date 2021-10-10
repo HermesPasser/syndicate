@@ -3,6 +3,7 @@ from datetime import datetime
 import urllib.request as req
 from pathlib import Path
 import certifi
+import copy
 import json
 import uuid
 
@@ -32,9 +33,16 @@ class ChannelList:
     def __init__(self):
         self.conf_dir = Path.home().joinpath('syndicate')
         self.channel_list_file = self.conf_dir.joinpath('channels.json')
-        self.channel_contents = dict()
-        self.feed = dict() # [channel_id][item_id]
+        self._channel_contents = dict()
+        self._feed_contents = dict() # [channel_id][item_id]
 
+    @property
+    def channel_contents(self):
+        return copy.deepcopy(self._channel_contents)
+
+    def get_feed(self, channel_id):
+        return copy.deepcopy(self._feed_contents[channel_id])
+    
     def open(self):
         self._create_path()
 
@@ -45,7 +53,7 @@ class ChannelList:
         if self.channel_list_file.exists():
             self._load_channels()
 
-        for channel_id in self.channel_contents.keys():
+        for channel_id in self._channel_contents.keys():
             self._load_feed(channel_id)
     
     def _load_channels(self):
@@ -54,7 +62,7 @@ class ChannelList:
 
         try:
             with self.channel_list_file.open(mode) as file: 
-                self.channel_contents = json.loads(file.read())
+                self._channel_contents = json.loads(file.read())
         except json.decoder.JSONDecodeError:
             pass
 
@@ -62,36 +70,36 @@ class ChannelList:
         path = self.conf_dir.joinpath(channel_id + '.json')
 
         if not path.exists():
-            raise FeedError(f"Not feed file found in {str(path)}")
+            raise FeedError(f"No feed file found in {str(path)}")
 
         try:
             with path.open('r+') as file: 
-                self.feed[channel_id] = json.loads(file.read())
+                self._feed_contents[channel_id] = json.loads(file.read())
         except json.decoder.JSONDecodeError:
             # TODO: _load_channels just pass and act like is a empty
             # file if the parsing fail, maybe we should just delete
             # the file and say no items/feed was create to make
             # it work in a similar fashion
-            raise FeedError(f"Bad formated feed file {str(path)}")
+            raise FeedError("Bad formated feed file" + str(path))
 
     def close(self):
         with self.channel_list_file.open('a+') as file:
-            txt = json.dumps(self.channel_contents)
+            txt = json.dumps(self._channel_contents)
             file.truncate(0)
             file.write(txt)
 
-        for item_id, item in self.feed.items():
+        for item_id, item in self._feed_contents.items():
             filename = self.conf_dir.joinpath(item_id + '.json')
             with filename.open('a+') as file:
                 file.truncate(0)
                 file.write(json.dumps(item))
 
     def add_channel(self, title, url):
-        if self.channel_contents.get(title, False):
+        if self._channel_contents.get(title, False):
             return
         
         id = uuid_from_url(url)
-        self.channel_contents[id] = {'title': title, 'url': url, 'syndycate_id': id}
+        self._channel_contents[id] = {'title': title, 'url': url, 'syndycate_id': id}
         self._create_channel_file(id)
         return id
 
@@ -103,10 +111,10 @@ class ChannelList:
         with path.open('w') as _:
             pass
         
-        self.feed[id] = {}
+        self._feed_contents[id] = {}
 
     def add_feed_item(self, title, content, link, id, date, channel_id):
-        if not self.channel_contents.get(channel_id, False):
+        if not self._channel_contents.get(channel_id, False):
             # maybe throw exception here or return false...
             return
 
@@ -122,17 +130,17 @@ class ChannelList:
             'channel': channel_id # not really necesary since its the filename
         }
 
-        self.feed[channel_id][id] = item
+        self._feed_contents[channel_id][id] = item
         return item
 
     def mark_feed_item_as(self, channel_id, id, is_read):
-        if not self.channel_contents.get(channel_id, False):
+        if not self._channel_contents.get(channel_id, False):
             return
         
-        if not self.channel_contents[channel_id].get(id, False):
+        if not self._channel_contents[channel_id].get(id, False):
             return
         
-        item = self.feed[channel_id][id]
+        item = self._feed_contents[channel_id][id]
         item['read'] = is_read
 
 
