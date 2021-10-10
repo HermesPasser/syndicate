@@ -1,6 +1,4 @@
 from PyQt5 import Qt, QtCore, QtGui, QtWidgets, uic
-from threading import Thread
-import time
 
 class Window(Qt.QMainWindow):
 
