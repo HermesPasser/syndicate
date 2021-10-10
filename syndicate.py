@@ -95,10 +95,10 @@ class ChannelList:
                 file.write(json.dumps(item))
 
     def add_channel(self, title, url):
-        if self._channel_contents.get(title, False):
+        id = uuid_from_url(url)
+        if id in self._channel_contents:
             return
         
-        id = uuid_from_url(url)
         self._channel_contents[id] = {'title': title, 'url': url, 'syndycate_id': id}
         self._create_channel_file(id)
         return id
