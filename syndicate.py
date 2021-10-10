@@ -23,7 +23,7 @@ class FeedError(Exception):
 
     uuid(some_channel):
 {
-    <id>: {title: '', content: '', read: false, url: '', id: '', link: '', date: ''},
+    <id>: {title: '', content: '', read: false, url: '', id: '', link: '', date: '', channel: '<channel_id>' },
     ...
 }
 """
