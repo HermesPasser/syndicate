@@ -1,5 +1,7 @@
 from syndicate import feed
 from PyQt5 import Qt, QtCore, QtGui, QtWidgets, uic
+from threading import Thread
+import time
 
 class Window(Qt.QMainWindow):
 
@@ -9,6 +11,8 @@ class Window(Qt.QMainWindow):
 		self.list_item_metadata = [] # [{}, ...]
 		self._initialize_component()
 		self._load_channel()
+
+		feed.subscribe(lambda item: self._on_new_item_added(item))
 
 	def _initialize_component(self):
 		uic.loadUi("window.ui", self)
@@ -43,6 +47,9 @@ class Window(Qt.QMainWindow):
 		for item in self.list_item_metadata:
 			self._add_list_item(item['title'], not item['read'])
 
+	def _on_new_item_added(self, item):
+		self._load_feed(item['channel'])
+	
 	def _set_component_font(self, comp, weight, italic):
 		font = comp.font()
 		font.setItalic(italic)

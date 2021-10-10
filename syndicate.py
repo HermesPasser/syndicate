@@ -34,6 +34,7 @@ class ChannelList:
         self.channel_list_file = self.conf_dir.joinpath('channels.json')
         self._channel_contents = dict()
         self._feed_contents = dict() # [channel_id][item_id]
+        self._callback = None
 
     @property
     def channel_contents(self):
@@ -81,6 +82,9 @@ class ChannelList:
             # it work in a similar fashion
             raise FeedError("Bad formated feed file" + str(path))
 
+    def subscribe(self, callback):
+        self._callback = callback
+    
     def close(self):
         with self.channel_list_file.open('a+') as file:
             txt = json.dumps(self._channel_contents)
@@ -117,7 +121,9 @@ class ChannelList:
             # maybe throw exception here or return false...
             return
 
-        # TODO: maybe check if the item already exists
+        if id in self._feed_contents[channel_id]:
+            # ignore if already exists...
+            return
 
         item = {
             'title': title,
@@ -130,6 +136,19 @@ class ChannelList:
         }
 
         self._feed_contents[channel_id][id] = item
+
+        # Notify of new items
+        # TODO: since this already is returning the item, maybe create a 
+        # new method just to check if is a new item and notify? But
+        # in this case we should add a func only to load the items
+        # that already are on the json.
+        # NOTE: since we don't call it on another thread, if the
+        # callback does something on the thread and never
+        # returns (like  funcs calling other funcs forever..)
+        # we may encounter some troubles
+        if self._callback is not None:
+            self._callback(item)
+
         return item
 
     def mark_feed_item_as(self, channel_id, id, is_read):
