@@ -97,10 +97,13 @@ class ChannelList:
                 file.truncate(0)
                 file.write(json.dumps(item))
 
+    def channel_exists(self, id):
+        return id in self._channel_contents
+    
     def add_channel(self, title, url):
         id = uuid_from_url(url)
-        if id in self._channel_contents:
-            return
+        if self.channel_exists(id):
+            raise FeedError(f'"{title}" channel (of id: {id}) already exists')
         
         self._channel_contents[id] = {'title': title, 'url': url, 'syndycate_id': id}
         self._create_channel_file(id)
@@ -117,9 +120,8 @@ class ChannelList:
         self._feed_contents[id] = {}
 
     def add_feed_item(self, title, content, link, id, date, channel_id):
-        if not self._channel_contents.get(channel_id, False):
-            # maybe throw exception here or return false...
-            return
+        if not self.channel_exists(channel_id):
+            raise FeedError(f"Can not add feed because channel with {channel_id} id does not exists")
 
         if id in self._feed_contents[channel_id]:
             # ignore if already exists...
@@ -152,11 +154,11 @@ class ChannelList:
         return item
 
     def mark_feed_item_as(self, channel_id, id, is_read):
-        if not self._channel_contents.get(channel_id, False):
-            return
+        if channel_id not in self._channel_contents:
+            raise FeedError(f"Could not set feed's reading status. The channel with {channel_id} id does not exists")
         
-        if not self._channel_contents[channel_id].get(id, False):
-            return
+        if id not in self._feed_contents[channel_id]:
+            raise FeedError(f"Could not set feed's reading status. The item with {id} id does not exists")
         
         item = self._feed_contents[channel_id][id]
         item['read'] = is_read
