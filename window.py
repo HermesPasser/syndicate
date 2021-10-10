@@ -1,11 +1,6 @@
 from syndicate import feed
 from PyQt5 import Qt, QtCore, QtGui, QtWidgets, uic
 
-# FIXME: since i'm doing a shallow copy of the ChannelList.feed object 
-# sometimes when i change the read status on the ui it changes back on
-# the ChannelList, and is serialized. Make a deepcopy and encapsulate
-# the members 
-
 class Window(Qt.QMainWindow):
 
 	def __init__(self, *args, **kwargs):
