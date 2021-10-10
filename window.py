@@ -15,8 +15,8 @@ class Window(Qt.QMainWindow):
 		self.setFixedSize(self.width(), self.height())
 		self.setWindowTitle('Syndicate')
 		self.button_save.clicked.connect(lambda: self._save_clicked())
-		self.button_mark_read.clicked.connect(lambda: self._mark_unread_clicked())
-		self.button_mark_all_read.clicked.connect(lambda: self._mark_all_unread_clicked())
+		self.button_mark_read.clicked.connect(lambda: self._mark_read_clicked())
+		self.button_mark_all_read.clicked.connect(lambda: self._mark_all_read_clicked())
 		self.tree_view_channels.itemClicked.connect(self._tree_item_selected)
 
 		# TODO: if i'm really going to deal with multiple tabs then i need to create those list items
@@ -33,7 +33,6 @@ class Window(Qt.QMainWindow):
 			self._load_feed(first_channel_id)
 
 			if len(self.list_item_metadata) != 0:
-				# FIXME: check if obj is not empty instead 
 				self._set_content(self.list_item_metadata[0]['content'])
 
 	def _load_feed(self, channel_id):
@@ -50,13 +49,23 @@ class Window(Qt.QMainWindow):
 		font.setWeight(weight)
 		comp.setData(QtCore.Qt.FontRole, font)
 
+	# TODO: refactor this class and remove this and its counterpart
 	def _mark_list_item_unread(self, item):
 		self._set_component_font(item, QtGui.QFont.Bold, False)
 
 	def _mark_list_item_read(self, item):
 		self._set_component_font(item, QtGui.QFont.Normal, True)
 
-	def _add_list_item(self, text, unread=True):
+	def _set_item_status(self, item, metaitem, is_read):
+		"""Update the read mark in the engine and in the UI"""
+		feed.mark_feed_item_as(metaitem['channel'], metaitem['id'], is_read)
+		
+		if is_read:
+			self._mark_list_item_read(item)
+		else:
+			self._mark_list_item_unread(item)
+		
+	def _add_list_item(self, text, read=False):
 		# FIXME: since i removed the logic that appends
 		# items to the list_item_metadata then this can't
 		# be used to add new items that can be brought by
@@ -64,7 +73,7 @@ class Window(Qt.QMainWindow):
 		# this one
 		item = QtWidgets.QListWidgetItem(text)
 
-		if unread:
+		if read:
 			self._mark_list_item_unread(item)
 		else:
 			self._mark_list_item_read(item)
@@ -75,40 +84,35 @@ class Window(Qt.QMainWindow):
 	# (maybe we call just hide it instead?)
 	# FIXME: this is called when control + a is typed, find a way to avoid that
 	def _item_selected(self):
-		index = self.list_item.currentRow()
 		qt_item = self.list_item.currentItem()
 		title = qt_item.text()
 
 		it  = filter(lambda it: it['title'] == title, self.list_item_metadata)
 		item = list(it)[0]
-
 		item['read'] = not item['read']
 
-		if item['read']:
-			self._mark_list_item_unread(qt_item)
-		else:
-			self._mark_list_item_read(qt_item)
-		
 		self._set_content(item['content'])
-
-		# call syndicate.mark_as_un/read() here
-		# ....
-		# TODO: maybe extract it since other buttons are going
-		# to be able to do this
+		# FIXME: clicking is not responsive since the listwidgetitem style
+		# does not consistently changes all times, whitch make it confusing
+		self._set_item_status(qt_item, item, item['read'])
 
 	def _save_clicked(self):
 		pass
 
-	def _mark_unread_clicked(self):
+	def _mark_read_clicked(self):
 		items = self.list_item.selectedItems()
 		for item in items:
-			self._mark_list_item_read(item)
+			# not the ideal way but i can't get the indexes of all selected items
+			it  = filter(lambda it: it['title'] == item.text(), self.list_item_metadata)
+			metaitem = list(it)[0]
+			self._set_item_status(item, metaitem, True)
 
-	def _mark_all_unread_clicked(self):
+	def _mark_all_read_clicked(self):
 		size = self.list_item.count()
 		for i in range(size):
 			item = self.list_item.item(i)
-			self._mark_list_item_read(item)
+			metaitem = self.list_item_metadata[i]
+			self._set_item_status(item, metaitem, True)
 
 	def _add_channel(self, text):
 		# TODO: this snippet will be used to set up folders
