@@ -142,7 +142,7 @@ class Window(Qt.QMainWindow):
 		self.new_feed_dialog.show()
 
 	def _save_clicked(self):
-		pass
+		self.feed.close()
 
 	def _mark_read_clicked(self):
 		items = self.list_item.selectedItems()

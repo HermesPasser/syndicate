@@ -104,7 +104,7 @@
     <widget class="QToolButton" name="button_save">
      <property name="geometry">
       <rect>
-       <x>20</x>
+       <x>40</x>
        <y>0</y>
        <width>25</width>
        <height>19</height>
@@ -117,7 +117,7 @@
     <widget class="QToolButton" name="button_mark_read">
      <property name="geometry">
       <rect>
-       <x>60</x>
+       <x>70</x>
        <y>0</y>
        <width>25</width>
        <height>19</height>
@@ -131,6 +131,36 @@
      <property name="geometry">
       <rect>
        <x>100</x>
+       <y>0</y>
+       <width>25</width>
+       <height>19</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>...</string>
+     </property>
+    </widget>
+    <widget class="QToolButton" name="button_new">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>0</y>
+       <width>25</width>
+       <height>19</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>...</string>
+     </property>
+     <property name="icon">
+      <iconset>
+       <normaloff>plus.png</normaloff>plus.png</iconset>
+     </property>
+    </widget>
+    <widget class="QToolButton" name="button_refresh">
+     <property name="geometry">
+      <rect>
+       <x>130</x>
        <y>0</y>
        <width>25</width>
        <height>19</height>
