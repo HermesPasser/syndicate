@@ -1,4 +1,6 @@
 from PyQt5 import Qt, QtCore, QtGui, QtWidgets, uic
+from new_feed_dialog import NewFeedDialog
+from syndicate import fetch_rss, parse_rss
 from system_tray import SystemTray
 
 class Window(Qt.QMainWindow):
@@ -8,6 +10,7 @@ class Window(Qt.QMainWindow):
 		self.feed = feed
 		self.list_item_metadata = [] # [{}, ...]
 		self.channel_list_metadata = [] # [(id, title), ...]
+		self._show_notifications = True
 		self._prev_rect = None
 		self._initialize_component()
 		self._load_channel()
@@ -18,10 +21,14 @@ class Window(Qt.QMainWindow):
 		uic.loadUi("window.ui", self)
 		self.setFixedSize(self.width(), self.height())
 		self.setWindowTitle('Syndicate')
+		self.button_new.clicked.connect(lambda: self._new_clicked())
 		self.button_save.clicked.connect(lambda: self._save_clicked())
 		self.button_mark_read.clicked.connect(lambda: self._mark_read_clicked())
 		self.button_mark_all_read.clicked.connect(lambda: self._mark_all_read_clicked())
+		self.button_refresh.clicked.connect(lambda: self._refresh_clicked())
 		self.tree_view_channels.itemClicked.connect(self._tree_item_selected)
+		self.new_feed_dialog = NewFeedDialog(self.feed)
+		self.new_feed_dialog.finished.connect(lambda: self._refresh_clicked()) 
 		self.tray = SystemTray()
 		self.tray.open_action.triggered.connect(self.show)
 		self.tray.exit_action.triggered.connect(self.close)
@@ -31,6 +38,7 @@ class Window(Qt.QMainWindow):
 		self.list_item.itemSelectionChanged.connect(self._item_selected)
 
 	def _load_channel(self):
+		self.tree_view_channels.clear()
 		self.channel_list_metadata = [(id, item['title']) for id, item in self.feed._channel_contents.items()]
 		for _, title in self.channel_list_metadata:
 			self._add_channel(title)
@@ -51,7 +59,16 @@ class Window(Qt.QMainWindow):
 			self._add_list_item(item['title'], not item['read'])
 
 	def _on_new_item_added(self, item):
-		self.tray.show_message('new item', item['title'])
+		# NOTE: not wise to call _load_feed yet since
+		# this method will be called when adding a new
+		# channel, and there fore each new element added
+		# by that window will call this method
+		# I need to se a way of disabling selectively
+		# the notifications (crate a api for that later)
+		# TODO: create a custom window to list all new feeds
+		# just like RSSOwl does intead of disabling the notifications
+		if self._show_notifications:
+			self.tray.show_message('New item', item['title'])
 	
 	def _set_component_font(self, comp, weight, italic):
 		font = comp.font()
@@ -106,7 +123,7 @@ class Window(Qt.QMainWindow):
 
 	# TODO: not forget to create a remove() that removes from the list and listwidget
 	# (maybe we call just hide it instead?)
-	# FIXME: this is called when control + a is typed, find a way to avoid that
+	# FIXME: this is called when 'ctrl + a' is typed, find a way to avoid that
 	def _item_selected(self):
 		qt_item = self.list_item.currentItem()
 		title = qt_item.text()
@@ -119,6 +136,10 @@ class Window(Qt.QMainWindow):
 		# FIXME: clicking is not responsive since the listwidgetitem style
 		# does not consistently changes all times, whitch make it confusing
 		self._set_item_status(qt_item, item, item['read'])
+
+	def _new_clicked(self):
+		self._show_notifications = False
+		self.new_feed_dialog.show()
 
 	def _save_clicked(self):
 		pass
@@ -137,6 +158,16 @@ class Window(Qt.QMainWindow):
 			item = self.list_item.item(i)
 			metaitem = self.list_item_metadata[i]
 			self._set_item_status(item, metaitem, True)
+
+	def _refresh_clicked(self):
+		# TODO: check the better way of 
+		# deciding how to handle refreshing
+		# the current item, current channel and
+		# everything
+		self._show_notifications = True
+		self._load_channel()
+		# text = fetch_rss('https://mundopodcast.com.br/feed/')
+		# parse_rss(text, 'https://mundopodcast.com.br/feed/', url)
 
 	def _add_channel(self, text):
 		# TODO: this snippet will be used to set up folders
