@@ -6,6 +6,7 @@ import certifi
 import copy
 import json
 import uuid
+import re
 
 def uuid_from_url(url):
 	return str(uuid.uuid3(uuid.NAMESPACE_URL, url))
@@ -169,17 +170,42 @@ class ChannelList:
 def mili_to_date(float):
 	return datetime.fromtimestamp(float)
 
+
 def str_date_to_mili(str):
 	"""Construct a POSIX timestamp from a date string.
 
-	Accepted format: %a, %d %b %Y %H:%M:%S %z,
+	Accepted formats: 
+		%a, %d %b %Y %H:%M:%S %z,
+		%a, %d %b %Y %H:%M:%S %Z
 	"""
-	# I'm not sure if all feeds follow this structure
-	# If not, put some regex to figure out wich type
-	# is and then add more types
-	date = datetime.strptime(str,"%a, %d %b %Y %H:%M:%S %z")
+	base_pattern = '[A-Z]([a-z]{2}|[a-z]), \d{2} [A-Z][a-z]{2} \d{4} \d{2}:\d{2}:\d{2}'
+	date_no_offset_or_tz = re.compile(base_pattern + '$')
+	date_with_utc_offset = re.compile(base_pattern + ' \+\d{4}') 
+	date_with_timezone = re.compile(base_pattern + ' [A-Z]{3}')
+	
+	strptime_no_z = "%a, %d %b %Y %H:%M:%S"
+	strptime_with_offset = strptime_no_z + ' %z'
+	strptime_with_timezone = strptime_no_z + ' %Z'
+	
+	date = 0
+	if date_no_offset_or_tz.match(str):
+		date = datetime.strptime(str, strptime_no_z)
+	elif date_with_utc_offset.match(str):
+		date = datetime.strptime(str, strptime_with_offset)
+	elif date_with_timezone.match(str):
+		# NOTE: %Z is very buggy (https://bugs.python.org/issue22377)
+		# and only recognizes UTC/GMT so lets remove anything else
+		# since it can also accepts nothing (well, it WILL treat
+		# it as UTC but at this point i dont care *shrugs*)
+		if  not (str.endswith('UTC') or str.endswith('GMT')):
+			str = str[0:-4] 
+			date = datetime.strptime(str,strptime_no_z)
+		else:
+			date = datetime.strptime(str, strptime_with_timezone)
+	else:
+		raise ValueError(f"Unkown date format {str}")
 
-	# since datetime is not resializable, let store the 
+	# since datetime is not serializable, let store the 
 	# timestamp and convert it back when is need
 	return datetime.timestamp(date)
 
