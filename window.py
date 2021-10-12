@@ -1,12 +1,14 @@
 from PyQt5 import Qt, QtCore, QtGui, QtWidgets, uic
+from system_tray import SystemTray
 
 class Window(Qt.QMainWindow):
 
 	def __init__(self, feed, *args, **kwargs):
 		super().__init__(*args, **kwargs)
 		self.feed = feed
-		self.channel_list_metadata = [] # [(id, title), ...]
 		self.list_item_metadata = [] # [{}, ...]
+		self.channel_list_metadata = [] # [(id, title), ...]
+		self._prev_rect = None
 		self._initialize_component()
 		self._load_channel()
 
@@ -20,6 +22,9 @@ class Window(Qt.QMainWindow):
 		self.button_mark_read.clicked.connect(lambda: self._mark_read_clicked())
 		self.button_mark_all_read.clicked.connect(lambda: self._mark_all_read_clicked())
 		self.tree_view_channels.itemClicked.connect(self._tree_item_selected)
+		self.tray = SystemTray()
+		self.tray.open_action.triggered.connect(self.show)
+		self.tray.exit_action.triggered.connect(self.close)
 
 		# TODO: if i'm really going to deal with multiple tabs then i need to create those list items
 		# dynamically and keep track witch is the current one
@@ -46,7 +51,7 @@ class Window(Qt.QMainWindow):
 			self._add_list_item(item['title'], not item['read'])
 
 	def _on_new_item_added(self, item):
-		self._load_feed(item['channel'])
+		self.tray.show_message('new item', item['title'])
 	
 	def _set_component_font(self, comp, weight, italic):
 		font = comp.font()
@@ -85,6 +90,20 @@ class Window(Qt.QMainWindow):
 		
 		self.list_item.addItem(item)
 	
+	def hideEvent(self, e):
+		self._prev_rect = self.geometry()
+		super().hideEvent(e)
+		self.tray.show()
+		self.hide()
+
+	def show(self):
+		super().show()
+		self.tray.hide()
+		self.setWindowState(QtCore.Qt.WindowMaximized)
+
+		if self._prev_rect is not None:
+			self.move(self._prev_rect.x(), self._prev_rect.x())
+
 	# TODO: not forget to create a remove() that removes from the list and listwidget
 	# (maybe we call just hide it instead?)
 	# FIXME: this is called when control + a is typed, find a way to avoid that
