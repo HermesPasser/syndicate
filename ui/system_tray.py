@@ -1,7 +1,7 @@
 from PyQt5.QtWidgets import QMenu, QSystemTrayIcon, QAction
 from PyQt5.QtGui import QIcon
 
-class SystemTray(QSystemTrayIcon):
+class SystemTray():
 	def __init__(self, *args, **kwargs):
 		super().__init__(*args, **kwargs)
 
