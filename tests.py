@@ -87,5 +87,32 @@ class ChannelListTest(unittest.TestCase):
 		self.feed.add_feed_item(item_name, 'content1', 'link', 1, 55555, ch_id)
 
 
+	def test_multiple_channels_with_items(self):
+		ch1_url = 'test url'
+		ch1_id = uuid_from_url(ch1_url)
+		ch1_item1_id = 1
+		self.feed.add_channel('test channel', ch1_url)
+		self.feed.add_feed_item('ch1 item1', '', '', ch1_item1_id, 0, ch1_id)
+
+		ch2_url = 'test url2'
+		ch2_id = uuid_from_url(ch2_url)
+		ch2_item1_id = 3
+		self.feed.add_channel('test channel', ch2_url)
+		self.feed.add_feed_item('ch1 item1', '', '', ch2_item1_id, 0, ch2_id)
+		
+		ch1_item2_id = 2
+		self.feed.add_feed_item('ch1 item2', '', '', ch1_item2_id, 0, ch1_id)
+
+		ch1_items = self.feed.get_feed(ch1_id)
+		ch2_items = self.feed.get_feed(ch2_id)
+
+		self.assertEqual(len(ch1_items.keys()), 2)
+		self.assertEqual(ch1_items[ch1_item1_id]['id'], ch1_item1_id)
+		self.assertEqual(ch1_items[ch1_item2_id]['id'], ch1_item2_id)
+		self.assertEqual(ch2_items[ch2_item1_id]['id'], ch2_item1_id)
+		
+
+
+
 if __name__ == '__main__':
 	unittest.main()
