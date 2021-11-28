@@ -123,9 +123,12 @@
        <height>20</height>
       </rect>
      </property>
-     <property name="text">
-      <string>...</string>
-     </property>
+     <property name="icon">
+      <iconset>
+       <normaloff>res\read.png</normaloff>
+	   res\read.png
+	  </iconset>
+	  </property>
     </widget>
     <widget class="QToolButton" name="button_mark_all_read">
      <property name="geometry">
@@ -136,8 +139,11 @@
        <height>20</height>
       </rect>
      </property>
-     <property name="text">
-      <string>...</string>
+     <property name="icon">
+	   <iconset>
+       <normaloff>res\readall.png</normaloff>
+	   res\readall.png
+	  </iconset>
      </property>
     </widget>
     <widget class="QToolButton" name="button_new">
@@ -165,8 +171,11 @@
        <height>20</height>
       </rect>
      </property>
-     <property name="text">
-      <string>...</string>
+	 <property name="icon">
+      <iconset>
+       <normaloff>res\reload.png</normaloff>
+	   res\reload.png
+	  </iconset>
      </property>
     </widget>
    </widget>
