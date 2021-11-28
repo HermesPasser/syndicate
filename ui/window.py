@@ -17,6 +17,7 @@ class Window(Qt.QMainWindow):
 		self._load_channel()
 
 		feed.subscribe(lambda item: self._on_new_item_added(item))
+		self.timer.start(10000 * 2)
 
 	def _initialize_component(self):
 		uic.loadUi("ui/window.ui", self)
@@ -33,6 +34,9 @@ class Window(Qt.QMainWindow):
 		self.tray = SystemTray()
 		self.tray.open_action.triggered.connect(self.show)
 		self.tray.exit_action.triggered.connect(self.close)
+		self.timer = QtCore.QTimer(self)
+		# self.timer.timeout.connect(self._look_for_updates)
+		
 
 		# TODO: if i'm really going to deal with multiple tabs then i need to create those list items
 		# dynamically and keep track witch is the current one
@@ -170,6 +174,11 @@ class Window(Qt.QMainWindow):
 		# text = fetch_rss('https://mundopodcast.com.br/feed/')
 		# parse_rss(text, 'https://mundopodcast.com.br/feed/', url)
 
+	def _look_for_updates(self):
+		for id, _ in self.channel_list_metadata:
+			url = self.feed.channel_contents[id]['url']
+			parse_rss(self.feed, fetch_rss(url), url)
+	
 	def _add_channel(self, text):
 		# TODO: this snippet will be used to set up folders
 		top_level_item = QtWidgets.QTreeWidgetItem(self.tree_view_channels)
