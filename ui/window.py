@@ -22,7 +22,6 @@ class Window(Qt.QMainWindow):
 	def _initialize_component(self):
 		uic.loadUi("ui/window.ui", self)
 		self.setFixedSize(self.width(), self.height())
-		self.setWindowTitle('Syndicate')
 		self.button_new.clicked.connect(lambda: self._new_clicked())
 		self.button_save.clicked.connect(lambda: self._save_clicked())
 		self.button_mark_read.clicked.connect(lambda: self._mark_read_clicked())
