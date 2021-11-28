@@ -174,7 +174,7 @@ def mili_to_date(float):
 	return datetime.fromtimestamp(float)
 
 
-def str_date_to_mili(str):
+def str_date_to_mili(str_date):
 	"""Construct a POSIX timestamp from a date string.
 
 	Accepted formats: 
@@ -191,22 +191,22 @@ def str_date_to_mili(str):
 	strptime_with_timezone = strptime_no_z + ' %Z'
 	
 	date = 0
-	if date_no_offset_or_tz.match(str):
-		date = datetime.strptime(str, strptime_no_z)
-	elif date_with_utc_offset.match(str):
-		date = datetime.strptime(str, strptime_with_offset)
-	elif date_with_timezone.match(str):
+	if date_no_offset_or_tz.match(str_date):
+		date = datetime.strptime(str_date, strptime_no_z)
+	elif date_with_utc_offset.match(str_date):
+		date = datetime.strptime(str_date, strptime_with_offset)
+	elif date_with_timezone.match(str_date):
 		# NOTE: %Z is very buggy (https://bugs.python.org/issue22377)
 		# and only recognizes UTC/GMT so lets remove anything else
 		# since it can also accepts nothing (well, it WILL treat
 		# it as UTC but at this point i dont care *shrugs*)
-		if  not (str.endswith('UTC') or str.endswith('GMT')):
-			str = str[0:-4] 
-			date = datetime.strptime(str,strptime_no_z)
+		if  not (str_date.endswith('UTC') or str_date.endswith('GMT')):
+			str_date = str_date[0:-4] 
+			date = datetime.strptime(str_date, strptime_no_z)
 		else:
-			date = datetime.strptime(str, strptime_with_timezone)
+			date = datetime.strptime(str_date, strptime_with_timezone)
 	else:
-		raise ValueError(f"Unkown date format {str}")
+		raise ValueError(f"Unkown date format {str_date}")
 
 	# since datetime is not serializable, let store the 
 	# timestamp and convert it back when is need
