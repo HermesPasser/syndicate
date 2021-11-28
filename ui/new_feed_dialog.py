@@ -10,7 +10,7 @@ class NewFeedDialog(Qt.QDialog):
 		self.feed = feed
 
 	def _initialize_component(self):
-		uic.loadUi("new_feed_dialog.ui", self)
+		uic.loadUi("ui/new_feed_dialog.ui", self)
 		self.setWindowFlags(self.windowFlags() & ~QtCore.Qt.WindowContextHelpButtonHint)
 		self.setFixedSize(self.width(), self.height())
 		self.button_load.clicked.connect(lambda: self._load_clicked())

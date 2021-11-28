@@ -1,5 +1,6 @@
 from PyQt5 import Qt, QtCore, QtGui, QtWidgets, uic
-from new_feed_dialog import NewFeedDialog
+from ui.new_feed_dialog import NewFeedDialog
+from ui.system_tray import SystemTray
 from syndicate import fetch_rss, parse_rss
 from system_tray import SystemTray
 
@@ -18,7 +19,7 @@ class Window(Qt.QMainWindow):
 		feed.subscribe(lambda item: self._on_new_item_added(item))
 
 	def _initialize_component(self):
-		uic.loadUi("window.ui", self)
+		uic.loadUi("ui/window.ui", self)
 		self.setFixedSize(self.width(), self.height())
 		self.setWindowTitle('Syndicate')
 		self.button_new.clicked.connect(lambda: self._new_clicked())

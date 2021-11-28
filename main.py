@@ -1,4 +1,4 @@
-from window import Window
+from ui.window import Window
 from PyQt5.QtWidgets import QApplication
 from syndicate import ChannelList
 import sys
