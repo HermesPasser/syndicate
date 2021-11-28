@@ -29,8 +29,8 @@ class FeedError(Exception):
 """
 
 class ChannelList:
-	def __init__(self):
-		self.conf_dir = Path.home().joinpath('syndicate')
+	def __init__(self, db_dir_name='syndicate'):
+		self.conf_dir = Path.home().joinpath(db_dir_name)
 		self.channel_list_file = self.conf_dir.joinpath('channels.json')
 		self._channel_contents = dict()
 		self._feed_contents = dict() # [channel_id][item_id]
@@ -86,6 +86,9 @@ class ChannelList:
 		self._callback = callback
 	
 	def close(self):
+		if not self.conf_dir.exists():
+			return
+		
 		with self.channel_list_file.open('a+') as file:
 			txt = json.dumps(self._channel_contents)
 			file.truncate(0)
