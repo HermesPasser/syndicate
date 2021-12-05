@@ -52,8 +52,7 @@ class ChannelList:
 	def channel_id_and_title(self):
 		self.cursor.execute(f"SELECT id, name from {self.channel_table_name}")
 		rows = self.cursor.fetchall()
-		rows = [row[0] for row in rows]
-        # print()
+		rows = [(row[0], row[1]) for row in rows]
 		return rows
 
 	def get_feed(self, channel_id):
