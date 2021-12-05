@@ -1,28 +1,14 @@
 from syndicate import ChannelList, uuid_from_url
-from pathlib import Path
 import unittest
-import shutil
-
-TEST_FOLDER = 'syndicate_test'
-
-def del_test_db_folder():
-	global TEST_FOLDER
-	directory = Path.home().joinpath(TEST_FOLDER)
-	if directory.exists():
-		shutil.rmtree(directory)
-
 
 class ChannelListTest(unittest.TestCase):
 	feed = None
 
 	def setUp(self):
-		global TEST_FOLDER
-		del_test_db_folder()
-		self.feed = ChannelList(TEST_FOLDER)
+		self.feed = ChannelList(':memory:')
 		self.feed.open()
 
 	def tearDown(self):
-		del_test_db_folder()
 		self.feed.close()
 		self.feed = None
 	
@@ -83,7 +69,7 @@ class ChannelListTest(unittest.TestCase):
 
 		self.feed.add_channel('test channel', test_url)
 
-		self.feed.subscribe(lambda item: self.assertEquals(item_name, item['title']))
+		self.feed.subscribe(lambda item: self.assertEqual(item_name, item['title']))
 		self.feed.add_feed_item(item_name, 'content1', 'link', 1, 55555, ch_id)
 
 
@@ -111,8 +97,6 @@ class ChannelListTest(unittest.TestCase):
 		self.assertEqual(ch1_items[ch1_item2_id]['id'], ch1_item2_id)
 		self.assertEqual(ch2_items[ch2_item1_id]['id'], ch2_item1_id)
 		
-
-
 
 if __name__ == '__main__':
 	unittest.main()

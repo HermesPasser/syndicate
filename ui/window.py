@@ -42,7 +42,7 @@ class Window(Qt.QMainWindow):
 
 	def _load_channel(self):
 		self.tree_view_channels.clear()
-		self.channel_list_metadata = [(id, item['title']) for id, item in self.feed._channel_contents.items()]
+		self.channel_list_metadata = [(id, title) for id, title in self.feed.channel_id_and_title]
 		for _, title in self.channel_list_metadata:
 			self._add_channel(title)
 
@@ -173,8 +173,8 @@ class Window(Qt.QMainWindow):
 		# parse_rss(text, 'https://mundopodcast.com.br/feed/', url)
 
 	def _look_for_updates(self):
-		for id, _ in self.channel_list_metadata:
-			url = self.feed.channel_contents[id]['url']
+		urls = self.feed.channel_links
+		for url in urls:
 			parse_rss(self.feed, fetch_rss(url), url)
 	
 	def _add_channel(self, text):
