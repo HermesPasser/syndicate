@@ -2,7 +2,6 @@ from PyQt5 import Qt, QtCore, QtGui, QtWidgets, uic
 from ui.new_feed_dialog import NewFeedDialog
 from ui.system_tray import SystemTray
 from syndicate import fetch_rss, parse_rss
-from system_tray import SystemTray
 
 class Window(Qt.QMainWindow):
 
