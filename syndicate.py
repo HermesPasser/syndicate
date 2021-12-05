@@ -88,7 +88,7 @@ class ChannelList:
 
 		self.cursor.execute(f"""
 			CREATE TABLE IF NOT EXISTS {self.item_table_name} (
-				id 		INTEGER NOT NULL PRIMARY KEY,
+				id 		VARCHAR(36) NOT NULL PRIMARY KEY,
 				title 	VARCHAR(160) NOT NULL,
 				content VARCHAR(300) NOT NULL,
 				link 	VARCHAR(60) NOT NULL,

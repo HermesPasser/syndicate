@@ -53,7 +53,7 @@ class ChannelListTest(unittest.TestCase):
 	def test_mark_item_as_read(self):
 		test_url = 'test url'
 		ch_id = uuid_from_url(test_url)
-		uid = 11
+		uid = '11'
 
 		self.feed.add_channel('test channel', test_url)
 		self.feed.add_feed_item('item1', 'content1', 'link', uid, 55555, ch_id)
@@ -76,17 +76,17 @@ class ChannelListTest(unittest.TestCase):
 	def test_multiple_channels_with_items(self):
 		ch1_url = 'test url'
 		ch1_id = uuid_from_url(ch1_url)
-		ch1_item1_id = 1
+		ch1_item1_id = '1'
 		self.feed.add_channel('test channel', ch1_url)
 		self.feed.add_feed_item('ch1 item1', '', '', ch1_item1_id, 0, ch1_id)
 
 		ch2_url = 'test url2'
 		ch2_id = uuid_from_url(ch2_url)
-		ch2_item1_id = 3
+		ch2_item1_id = '3'
 		self.feed.add_channel('test channel', ch2_url)
 		self.feed.add_feed_item('ch1 item1', '', '', ch2_item1_id, 0, ch2_id)
 		
-		ch1_item2_id = 2
+		ch1_item2_id = '2'
 		self.feed.add_feed_item('ch1 item2', '', '', ch1_item2_id, 0, ch1_id)
 
 		ch1_items = self.feed.get_feed(ch1_id)
