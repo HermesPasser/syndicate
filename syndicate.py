@@ -94,7 +94,7 @@ class ChannelList:
 				link 	VARCHAR(60) NOT NULL,
 				date	DATE NOT NULL,
 				read	INTEGER DEFAULT FALSE,
-				channel	INTEGER NOT NULL,
+				channel	VARCHAR(36) NOT NULL,
 				FOREIGN KEY(channel) REFERENCES {self.channel_table_name}(id)
 			);
 		""")
