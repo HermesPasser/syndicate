@@ -5,7 +5,7 @@ class SystemTray():
 	def __init__(self, *args, **kwargs):
 		super().__init__(*args, **kwargs)
 
-		self.icon = QIcon("plus.png")
+		self.icon = QIcon("ui/res/plus.png")
 		self._tray = QSystemTrayIcon()
 		self._tray.setIcon(self.icon)
 		self._tray.setToolTip('Syndicate')
