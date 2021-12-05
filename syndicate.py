@@ -176,7 +176,7 @@ def mili_to_date(float):
 	return datetime.fromtimestamp(float)
 
 
-def str_date_to_mili(str_date):
+def str_date_to_mili(str_date : str) -> int:
 	"""Construct a POSIX timestamp from a date string.
 
 	Accepted formats: 
