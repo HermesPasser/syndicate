@@ -84,7 +84,7 @@ class ChannelList:
 			CREATE TABLE IF NOT EXISTS {self.channel_table_name} (
 				id 		VARCHAR(36) NOT NULL PRIMARY KEY,
 				name	VARCHAR(30) NOT NULL,
-				link  	VARCHAR(60)
+				link  	VARCHAR(120)
 			);
 		""")
 
@@ -92,8 +92,8 @@ class ChannelList:
 			CREATE TABLE IF NOT EXISTS {self.item_table_name} (
 				id 		VARCHAR(36) NOT NULL PRIMARY KEY,
 				title 	VARCHAR(160) NOT NULL,
-				content VARCHAR(300) NOT NULL,
-				link 	VARCHAR(60) NOT NULL,
+				content VARCHAR(4000) NOT NULL,
+				link 	VARCHAR(120) NOT NULL,
 				date	DATE NOT NULL,
 				read	INTEGER DEFAULT FALSE,
 				channel	VARCHAR(36) NOT NULL,
