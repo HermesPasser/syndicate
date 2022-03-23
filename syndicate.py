@@ -181,16 +181,19 @@ def str_date_to_mili(str_date : str) -> int:
 
 	Accepted formats: 
 		%a, %d %b %Y %H:%M:%S %z,
-		%a, %d %b %Y %H:%M:%S %Z
+		%a, %d %b %Y %H:%M:%S %Z,
+		%A, %d %b %Y %H:%M:%S %Z
 	"""
 	base_pattern = '[A-Z]([a-z]{2}|[a-z]), \d{2} [A-Z][a-z]{2} \d{4} \d{2}:\d{2}:\d{2}'
 	date_no_offset_or_tz = re.compile(base_pattern + '$')
 	date_with_utc_offset = re.compile(base_pattern + ' \+\d{4}') 
 	date_with_timezone = re.compile(base_pattern + ' [A-Z]{3}')
-	
+	date_with_full_month_name_and_timezone = re.compile('[A-Z][a-z]*, \d{2} [A-Z][a-z]{2} \d{4} \d{2}:\d{2}:\d{2}')
+
 	strptime_no_z = "%a, %d %b %Y %H:%M:%S"
 	strptime_with_offset = strptime_no_z + ' %z'
 	strptime_with_timezone = strptime_no_z + ' %Z'
+	strptime_with_full_month_name_and_timezone = "%A, %d %b %Y %H:%M:%S %Z"
 	
 	date = 0
 	if date_no_offset_or_tz.match(str_date):
@@ -207,6 +210,8 @@ def str_date_to_mili(str_date : str) -> int:
 			date = datetime.strptime(str_date, strptime_no_z)
 		else:
 			date = datetime.strptime(str_date, strptime_with_timezone)
+	elif date_with_full_month_name_and_timezone.match(str_date):
+		date = datetime.strptime(str_date, strptime_with_full_month_name_and_timezone)
 	else:
 		raise ValueError(f"Unkown date format {str_date}")
 
