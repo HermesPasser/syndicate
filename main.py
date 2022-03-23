@@ -3,7 +3,7 @@ from PyQt5.QtWidgets import QApplication
 from syndicate import ChannelList
 import sys
 
-if __name__ == '__main__':
+def main():
     feed = ChannelList()
     feed.open()
     app = QApplication(sys.argv)
@@ -12,3 +12,6 @@ if __name__ == '__main__':
     code = app.exec_()
     feed.close()
     sys.exit(code)
+
+if __name__ == '__main__':
+	main()
