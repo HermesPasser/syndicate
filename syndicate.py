@@ -181,8 +181,8 @@ def str_date_to_mili(str_date : str) -> int:
 
 	Accepted formats: 
 		%a, %d %b %Y %H:%M:%S %z,
-		%a, %d %b %Y %H:%M:%S %Z,
-		%A, %d %b %Y %H:%M:%S %Z
+		%a, %d %b %Y %H:%M:%S %Z,  (e.g Sat, 01 May 2021 05:26:03 +0000, Wed, 22 Sep 2010 09:12:01 PDT)
+		%A, %d %b %Y %H:%M:%S %Z   (e.g Saturday, 19 Mar 2022 01:00:45 GMT)
 	"""
 	base_pattern = '[A-Z]([a-z]{2}|[a-z]), \d{2} [A-Z][a-z]{2} \d{4} \d{2}:\d{2}:\d{2}'
 	date_no_offset_or_tz = re.compile(base_pattern + '$')
