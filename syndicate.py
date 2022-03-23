@@ -29,7 +29,9 @@ class FeedError(Exception):
 }
 """
 
-DB_FILE = Path.home().joinpath('syndicate', 'syndicate.db')
+DB_FOLDER = Path.home().joinpath('syndicate')
+DB_FILE = DB_FOLDER.joinpath('syndicate.db')
+DB_FOLDER.mkdir(exist_ok=True)
 
 # FIXME: folder need to be created
 class ChannelList:
