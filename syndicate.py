@@ -217,9 +217,10 @@ def str_date_to_mili(str_date : str) -> int:
 
 	# since datetime is not serializable, let store the 
 	# timestamp and convert it back when is need
-	return datetime.timestamp(date)
+	return int(datetime.timestamp(date))
 
-
+# FIXME: erros with urls:
+# - forbidden: https://www.podcloud.com.br/feed/podcaps
 def fetch_rss(url):
 	# TODO: error handling when is not 200
 	raw_text = ''
