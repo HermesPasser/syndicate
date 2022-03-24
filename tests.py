@@ -2,7 +2,7 @@ from syndicate import ChannelList, uuid_from_url
 import unittest
 
 class ChannelListTest(unittest.TestCase):
-	feed = None
+	feed: ChannelList
 
 	def setUp(self):
 		self.feed = ChannelList(':memory:')
@@ -10,7 +10,6 @@ class ChannelListTest(unittest.TestCase):
 
 	def tearDown(self):
 		self.feed.close()
-		self.feed = None
 	
 	def test_add_channel(self):
 		test_url = 'test url'
@@ -71,7 +70,6 @@ class ChannelListTest(unittest.TestCase):
 
 		self.feed.subscribe(lambda item: self.assertEqual(item_name, item['title']))
 		self.feed.add_feed_item(item_name, 'content1', 'link', 1, 55555, ch_id)
-
 
 	def test_multiple_channels_with_items(self):
 		ch1_url = 'test url'
