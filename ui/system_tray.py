@@ -1,3 +1,5 @@
+import os
+
 from PyQt5.QtWidgets import QMenu, QSystemTrayIcon, QAction
 from PyQt5.QtGui import QIcon
 
@@ -5,7 +7,7 @@ class SystemTray():
 	def __init__(self, *args, **kwargs):
 		super().__init__(*args, **kwargs)
 
-		self.icon = QIcon("ui/res/plus.png")
+		self.icon = QIcon(os.path.join("ui","res", "plus.png"))
 		self._tray = QSystemTrayIcon()
 		self._tray.setIcon(self.icon)
 		self._tray.setToolTip('Syndicate')

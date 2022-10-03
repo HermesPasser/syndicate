@@ -1,3 +1,4 @@
+import os
 from PyQt5 import Qt, QtCore, QtGui, QtWidgets, uic
 from ui.new_feed_dialog import NewFeedDialog
 from ui.system_tray import SystemTray
@@ -19,7 +20,7 @@ class Window(Qt.QMainWindow):
 		self.timer.start(10000 * 2)
 
 	def _initialize_component(self):
-		uic.loadUi("ui/window.ui", self)
+		uic.loadUi(os.path.join("ui", "window.ui"), self)
 		self.setFixedSize(self.width(), self.height())
 		self.button_new.clicked.connect(lambda: self._new_clicked())
 		self.button_save.clicked.connect(lambda: self._save_clicked())
