@@ -8,6 +8,7 @@ import copy
 import json
 import uuid
 import re
+import dateutil
 
 def uuid_from_url(url):
 	return str(uuid.uuid3(uuid.NAMESPACE_URL, url))
@@ -179,47 +180,13 @@ def mili_to_date(float):
 
 
 def str_date_to_mili(str_date : str) -> int:
-	"""Construct a POSIX timestamp from a date string.
+	"""Construct a POSIX timestamp from a date string."""
+	try:
+		return int(dateutil.parser.parse((str_date)).timestamp())
+	except ValueError as ex:
+		print('str_date_to_mili:', str_date, ex)
+		return 0
 
-	Accepted formats: 
-		%a, %d %b %Y %H:%M:%S %z,
-		%a, %d %b %Y %H:%M:%S %Z,  (e.g Sat, 01 May 2021 05:26:03 +0000, Wed, 22 Sep 2010 09:12:01 PDT)
-		%A, %d %b %Y %H:%M:%S %Z   (e.g Saturday, 19 Mar 2022 01:00:45 GMT)
-	"""
-	base_pattern = '[A-Z]([a-z]{2}|[a-z]), \d{2} [A-Z][a-z]{2} \d{4} \d{2}:\d{2}:\d{2}'
-	date_no_offset_or_tz = re.compile(base_pattern + '$')
-	date_with_utc_offset = re.compile(base_pattern + ' \+\d{4}') 
-	date_with_timezone = re.compile(base_pattern + ' [A-Z]{3}')
-	date_with_full_month_name_and_timezone = re.compile('[A-Z][a-z]*, \d{2} [A-Z][a-z]{2} \d{4} \d{2}:\d{2}:\d{2}')
-
-	strptime_no_z = "%a, %d %b %Y %H:%M:%S"
-	strptime_with_offset = strptime_no_z + ' %z'
-	strptime_with_timezone = strptime_no_z + ' %Z'
-	strptime_with_full_month_name_and_timezone = "%A, %d %b %Y %H:%M:%S %Z"
-	
-	date = 0
-	if date_no_offset_or_tz.match(str_date):
-		date = datetime.strptime(str_date, strptime_no_z)
-	elif date_with_utc_offset.match(str_date):
-		date = datetime.strptime(str_date, strptime_with_offset)
-	elif date_with_timezone.match(str_date):
-		# NOTE: %Z is very buggy (https://bugs.python.org/issue22377)
-		# and only recognizes UTC/GMT so lets remove anything else
-		# since it can also accepts nothing (well, it WILL treat
-		# it as UTC but at this point i dont care *shrugs*)
-		if  not (str_date.endswith('UTC') or str_date.endswith('GMT')):
-			str_date = str_date[0:-4] 
-			date = datetime.strptime(str_date, strptime_no_z)
-		else:
-			date = datetime.strptime(str_date, strptime_with_timezone)
-	elif date_with_full_month_name_and_timezone.match(str_date):
-		date = datetime.strptime(str_date, strptime_with_full_month_name_and_timezone)
-	else:
-		raise ValueError(f"Unkown date format {str_date}")
-
-	# since datetime is not serializable, let store the 
-	# timestamp and convert it back when is need
-	return int(datetime.timestamp(date))
 
 # FIXME: erros with urls:
 # - forbidden: https://www.podcloud.com.br/feed/podcaps
