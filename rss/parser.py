@@ -124,7 +124,9 @@ class RssParser:
             # <item> element. An example:
             guid = (link, False)  # fallback value
             if guid_element := item_element.select_one("|guid"):
-                guid = (guid_element.text, bool(guid_element.get("isPermaLink", True)))
+                possible_vals = {"false": False, "0": False, "true": True, "1": True}
+                is_perma_link = possible_vals[guid_element.get("isPermaLink", "true")]
+                guid = (guid_element.text, is_perma_link)
 
             # Its value is the name of the RSS channel that the item came from, derived from its
             # <title>. It has one required attribute, url, which links to the XMLization of the
