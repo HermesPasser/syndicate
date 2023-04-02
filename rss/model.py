@@ -1,8 +1,9 @@
 from datetime import datetime
 from typing import NamedTuple
 
+
 class Category(NamedTuple):
-    domain: str # str or URL
+    domain: str  # str or URL
     name: str
 
 
@@ -18,14 +19,14 @@ class FeedItem(NamedTuple):
     link: str
 
     author: str | None
-    comments: str | None # actually comments URL
-    guid: tuple[str, bool] | None # actually an unique URL
-    source: tuple[str, str] | None # second item is an URL
+    comments: str | None  # actually comments URL
+    guid: tuple[str, bool] | None  # actually an unique URL
+    source: tuple[str, str] | None  # second item is an URL
     pub_date: datetime | None
     enclosure: Enclosure | None
-    categories: list[Category] | None # second str is an URL, sort of
+    categories: list[Category] | None  # second str is an URL, sort of
 
-    errors: list[str] # list of errors parsing the item
+    errors: list[str]  # list of errors parsing the item
 
 
 class Cloud(NamedTuple):
@@ -54,9 +55,9 @@ class FeedChannel(NamedTuple):
     cloud: Cloud | None
     pubDate: datetime | None
     lastBuildDate: datetime | None
-    categories: list[Category] | None # second str is an URL, sort of
-    image: None # TODO
-    textinput: None # TODO
+    categories: list[Category] | None  # second str is an URL, sort of
+    image: None  # TODO
+    textinput: None  # TODO
 
     # PICS rating. Not sure what goes into or if has attrs since not even the
     # w3cshools has an entriy about

@@ -28,14 +28,14 @@ class RssParser:
 
     def _parse_channel(self):
         # TODO: make this a property so we dont need to pass it everywhere
-        channel_element = self._root.select_one('channel')
+        channel_element = self._root.select_one("channel")
 
         # https://www.rssboard.org/rss-specification#requiredChannelElements
         # This element is REQUIRED and MUST contain three child elements:
         # description, link and title.
-        title = channel_element.select_one('|title').text
-        link = channel_element.select_one('|link').text
-        desc = channel_element.select_one('|description').text
+        title = channel_element.select_one("|title").text
+        link = channel_element.select_one("|link").text
+        desc = channel_element.select_one("|description").text
 
         # https://www.rssboard.org/rss-specification#optionalChannelElements
         # The channel MAY contain each of the following OPTIONAL elements:
@@ -45,29 +45,27 @@ class RssParser:
             title=title,
             description=desc,
             link=link,
-            language=self._get_one_or_none(channel_element, '|language'),
-            copyright=self._get_one_or_none(channel_element, '|copyright'),
-            managingEditor=self._get_one_or_none(
-                channel_element, '|managingEditor'),
-            webMaster=self._get_one_or_none(channel_element, '|webMaster'),
-            generator=self._get_one_or_none(channel_element, '|generator'),
-            docs=self._get_one_or_none(channel_element, '|docs'),
-            rating=self._get_one_or_none(channel_element, '|rating'),
-            ttl=self._get_one_or_none(channel_element, '|ttl', cast_to=int),
-            skipHours=self._get_one_or_none(
-                channel_element, '|skipHours', cast_to=int),
-            skipDays=self._get_one_or_none(
-                channel_element, '|skipDays', cast_to=int),
+            language=self._get_one_or_none(channel_element, "|language"),
+            copyright=self._get_one_or_none(channel_element, "|copyright"),
+            managingEditor=self._get_one_or_none(channel_element, "|managingEditor"),
+            webMaster=self._get_one_or_none(channel_element, "|webMaster"),
+            generator=self._get_one_or_none(channel_element, "|generator"),
+            docs=self._get_one_or_none(channel_element, "|docs"),
+            rating=self._get_one_or_none(channel_element, "|rating"),
+            ttl=self._get_one_or_none(channel_element, "|ttl", cast_to=int),
+            skipHours=self._get_one_or_none(channel_element, "|skipHours", cast_to=int),
+            skipDays=self._get_one_or_none(channel_element, "|skipDays", cast_to=int),
             pubDate=self._get_one_or_none(
-                channel_element, '|pubDate', cast_to=dateutil_parser.parse),
+                channel_element, "|pubDate", cast_to=dateutil_parser.parse
+            ),
             lastBuildDate=self._get_one_or_none(
-                channel_element, '|lastBuildDate', cast_to=dateutil_parser.parse),
+                channel_element, "|lastBuildDate", cast_to=dateutil_parser.parse
+            ),
             categories=self._parse_categories(channel_element),
-            cloud=self._parse_cloud(channel_element.select_one('|cloud')),
-            image=self._parse_image(channel_element.select_one('|image')),
-            textinput=self._parse_textinput(
-                channel_element.select_one('|textinput')),
-            items={}
+            cloud=self._parse_cloud(channel_element.select_one("|cloud")),
+            image=self._parse_image(channel_element.select_one("|image")),
+            textinput=self._parse_textinput(channel_element.select_one("|textinput")),
+            items={},
         )
 
     def _parse_cloud(self, cloud_element):
@@ -79,12 +77,12 @@ class RssParser:
             return None
 
         return model.Cloud(
-            domain=cloud_element.get('domain'),
-            path=cloud_element.get('path'),
+            domain=cloud_element.get("domain"),
+            path=cloud_element.get("path"),
             # this should be an enumeration since there is only 3 possible values
-            protocol=cloud_element.get('protocol'),
-            registerProcedure=cloud_element.get('registerProcedure'),
-            port=int(cloud_element.get('port')),
+            protocol=cloud_element.get("protocol"),
+            registerProcedure=cloud_element.get("registerProcedure"),
+            port=int(cloud_element.get("port")),
         )
 
     def _parse_image(self, image_element):
@@ -105,74 +103,74 @@ class RssParser:
 
         items = []
 
-        for item_element in self._root.select('channel item'):
+        for item_element in self._root.select("channel item"):
             # An item MUST contain either a title or description.
-            title, link, desc, errors = self._parse_required_item_elements(
-                item_element)
+            title, link, desc, errors = self._parse_required_item_elements(item_element)
 
             # An item MAY contain the following child elements: author, category,
             # comments, description, enclosure, guid, link, pubDate, source and title.
             # All of these elements are OPTIONAL.
-            enclosure = self._parse_enclosure(
-                item_element.select_one('|enclosure'))
+            enclosure = self._parse_enclosure(item_element.select_one("|enclosure"))
             categories = self._parse_categories(item_element)
-            author = self._get_one_or_none(item_element, '|author')
-            comments = self._get_one_or_none(item_element, '|comments')
+            author = self._get_one_or_none(item_element, "|author")
+            comments = self._get_one_or_none(item_element, "|comments")
             pub_date = self._get_one_or_none(
-                item_element, '|pubDate', cast_to=dateutil_parser.parse)
+                item_element, "|pubDate", cast_to=dateutil_parser.parse
+            )
 
             # If the guid element has an attribute named isPermaLink with a value of true,
             # the reader may assume that it is a permalink to the item, that is, a url that
             # can be opened in a Web browser, that points to the full item described by the
             # <item> element. An example:
             guid = (link, False)  # fallback value
-            if guid_element := item_element.select_one('|guid'):
-                guid = (guid_element.text, bool(guid_element.get(
-                    'isPermaLink', True)))
+            if guid_element := item_element.select_one("|guid"):
+                guid = (guid_element.text, bool(guid_element.get("isPermaLink", True)))
 
             # Its value is the name of the RSS channel that the item came from, derived from its
             # <title>. It has one required attribute, url, which links to the XMLization of the
             # source.
             source = None
-            if source_element := item_element.select_one('|source'):
-                source = (source_element.text, source_element.get('url', ''))
+            if source_element := item_element.select_one("|source"):
+                source = (source_element.text, source_element.get("url", ""))
 
-            items.append(model.FeedItem(
-                title=title,
-                link=link,
-                description=desc,
-                guid=guid,
-                enclosure=enclosure,
-                author=author,
-                source=source,
-                comments=comments,
-                categories=categories,
-                pub_date=pub_date,
-                errors=errors
-            ))
+            items.append(
+                model.FeedItem(
+                    title=title,
+                    link=link,
+                    description=desc,
+                    guid=guid,
+                    enclosure=enclosure,
+                    author=author,
+                    source=source,
+                    comments=comments,
+                    categories=categories,
+                    pub_date=pub_date,
+                    errors=errors,
+                )
+            )
 
         return items
 
     def _parse_required_item_elements(self, item_element):
         errors = []
 
-        title = ''
-        if element := item_element.select_one('|title'):
+        title = ""
+        if element := item_element.select_one("|title"):
             title = element.text
         else:
-            errors.append('Missing required element title')
+            errors.append("Missing required element title")
 
-        link = ''
-        if element := item_element.select_one('|link'):
+        link = ""
+        if element := item_element.select_one("|link"):
             link = element.text
         else:
-            errors.append('Missing required element link')
+            errors.append("Missing required element link")
 
-        desc = ''
-        if element := item_element.select_one('|description'):
+        desc = ""
+        if element := item_element.select_one("|description"):
             desc = element.text
         else:
-            errors.append('Missing required element description')
+            errors.append("Missing required element description")
 
         return (title, link, desc, errors)
 
@@ -183,25 +181,24 @@ class RssParser:
             return None
 
         return model.Enclosure(
-            url=enclosure_element.get('url'),
-            length=int(enclosure_element.get('length')),
-            mime_type=enclosure_element.get('type')
+            url=enclosure_element.get("url"),
+            length=int(enclosure_element.get("length")),
+            mime_type=enclosure_element.get("type"),
         )
 
     def _parse_categories(self, item_element) -> list[model.Category]:
         categories = []
 
-        for category_element in item_element.select('|category'):
+        for category_element in item_element.select("|category"):
             # It has one optional attribute, domain, a string that identifies a categorization
             # taxonomy.
-            domain = category_element.get('domain')
+            domain = category_element.get("domain")
 
             # The value of the element is a forward-slash-separated string that identifies a
             # hierarchiclocation in the indicated taxonomy. Processors may establish conventions
             # for theinterpretation of categories.
-            for cat in category_element.text.split('/'):
-                categories.append(model.Category(
-                    domain=domain, name=cat))
+            for cat in category_element.text.split("/"):
+                categories.append(model.Category(domain=domain, name=cat))
 
         return categories
 
