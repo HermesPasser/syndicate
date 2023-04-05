@@ -111,7 +111,7 @@
       </rect>
      </property>
      <property name="text">
-      <string>...</string>
+      <string>S</string>
      </property>
     </widget>
     <widget class="QToolButton" name="button_mark_read">
@@ -125,8 +125,8 @@
      </property>
      <property name="icon">
       <iconset>
-       <normaloff>res\read.png</normaloff>
-	   res\read.png
+       <normaloff>res/read.png</normaloff>
+	   res/read.png
 	  </iconset>
 	  </property>
     </widget>
@@ -141,8 +141,8 @@
      </property>
      <property name="icon">
 	   <iconset>
-       <normaloff>res\readall.png</normaloff>
-	   res\readall.png
+       <normaloff>res/readall.png</normaloff>
+	   res/readall.png
 	  </iconset>
      </property>
     </widget>
@@ -157,8 +157,8 @@
      </property>
      <property name="icon">
       <iconset>
-       <normaloff>res\plus.png</normaloff>
-	   res\plus.png
+       <normaloff>res/plus.png</normaloff>
+	   res/plus.png
 	  </iconset>
      </property>
     </widget>
@@ -173,8 +173,8 @@
      </property>
 	 <property name="icon">
       <iconset>
-       <normaloff>res\reload.png</normaloff>
-	   res\reload.png
+       <normaloff>res/reload.png</normaloff>
+	   res/reload.png
 	  </iconset>
      </property>
     </widget>

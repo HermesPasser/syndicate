@@ -1,3 +1,5 @@
+import os
+
 from PyQt5.QtWidgets import QMenu, QSystemTrayIcon, QAction
 from PyQt5.QtGui import QIcon
 
