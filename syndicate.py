@@ -1,5 +1,4 @@
-import xml.etree.ElementTree as ET
-from datetime import datetime
+import datetime
 import urllib.request as req
 from pathlib import Path
 import sqlite3
@@ -9,7 +8,9 @@ import json
 import uuid
 import re
 import dateutil
+import requests
 
+from rss.parser import RssParser
 
 def uuid_from_url(url):
     return str(uuid.uuid3(uuid.NAMESPACE_URL, url))
@@ -213,38 +214,28 @@ def str_date_to_mili(str_date: str) -> int:
         return 0
 
 
-# FIXME: erros with urls:
-# - forbidden: https://www.podcloud.com.br/feed/podcaps
 def fetch_rss(url):
     # TODO: error handling when is not 200
-    raw_text = ""
-    with req.urlopen(url, cafile=certifi.where()) as response:
-        raw_text = response.read()
-
-    return raw_text
+    return requests.get(url, timeout=2).text
 
 
-def parse_rss(feed, text, url, channel_name=""):
-    # this is the happy path, we need to handle malformated xml
-
-    root = ET.fromstring(text)
-    channel = root.find("channel")
-    if channel_name == "":
-        channel_name = channel.find("title").text
+def parse_rss(feed, content, url, channel_name=""):
+    channel = RssParser(content).parse()
 
     ch_id = uuid_from_url(url)
+    channel_name = channel_name or channel.title
     if not feed.channel_exists(ch_id):
         ch_id = feed.add_channel(
             channel_name, url
         )  # feed's url, not the embeded link inside of it
 
-    for item in channel.findall("item"):
+
+    for  item in channel.items.values():
         feed.add_feed_item(
-            # TODO: can't figure how get <content:encoded> tag with etree, so we're going with description instead
-            item.find("title").text,
-            item.find("description").text,
-            item.find("link").text,
-            item.find("guid").text,
-            str_date_to_mili(item.find("pubDate").text),
+            item.title,
+            item.description,
+            item.link,
+            item.guid[0],
+            item.pub_date.timestamp() if item.pub_date else 0,
             ch_id,
         )
