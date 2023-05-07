@@ -37,14 +37,12 @@ class RssParser:
         link = channel_element.select_one("|link").text
         desc = channel_element.select_one("|description").text
 
-        # https://www.rssboard.org/rss-specification#optionalChannelElements
-        # The channel MAY contain each of the following OPTIONAL elements:
-        # TODO image, textInput.
-
         return model.FeedChannel(
             title=title,
             description=desc,
             link=link,
+            # https://www.rssboard.org/rss-specification#optionalChannelElements
+            # The channel MAY contain each of the following OPTIONAL elements:
             language=self._get_one_or_none(channel_element, "|language"),
             copyright=self._get_one_or_none(channel_element, "|copyright"),
             managingEditor=self._get_one_or_none(channel_element, "|managingEditor"),
