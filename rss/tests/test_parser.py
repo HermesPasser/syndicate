@@ -206,3 +206,83 @@ class RssParserTest(unittest.TestCase):
 
         item_id = "http://test.test/0000"
         self.assertEqual(given.items[item_id].guid, (item_id, False))
+
+    def test_parsing_channel_image_required_elements(self):
+        given = RssParser(
+            """
+            <rss version="2.0">
+                <channel>
+                    <title>Channel Title</title>
+                    <link>https://test.test</link>
+
+                    <description>Sample description</description>
+                    <image>
+                        <url>https://www.test.test/images/logo.gif</url>
+                        <title>Image title</title>
+                        <link>https://www.test.test/</link>
+                    </image>
+                </channel>
+            </rss>
+        """
+        ).parse()
+
+        self.assertEqual(given.image.url, "https://www.test.test/images/logo.gif")
+        self.assertEqual(given.image.title, "Image title")
+        self.assertEqual(given.image.link, "https://www.test.test/")
+        self.assertEqual(given.image.height, 31)
+        self.assertEqual(given.image.width, 88)
+        self.assertEqual(given.image.description, None)
+
+    def test_parsing_channel_image_optional_elements(self):
+        given = RssParser(
+            """
+            <rss version="2.0">
+                <channel>
+                    <title>Channel Title</title>
+                    <link>https://test.test</link>
+
+                    <description>Sample description</description>
+                    <image>
+                        <url>https://www.test.test/images/logo.gif</url>
+                        <title>Image title</title>
+                        <description>this describes the image</description>
+                        <link>https://www.test.test/</link>
+                        <height>22</height>
+                        <width>55</width>
+                    </image>
+                </channel>
+            </rss>
+        """
+        ).parse()
+
+        self.assertEqual(given.image.url, "https://www.test.test/images/logo.gif")
+        self.assertEqual(given.image.title, "Image title")
+        self.assertEqual(given.image.link, "https://www.test.test/")
+        self.assertEqual(given.image.height, 22)
+        self.assertEqual(given.image.width, 55)
+        self.assertEqual(given.image.description, "this describes the image")
+
+    def test_parsing_channel_textfield(self):
+        given = RssParser(
+            """
+            <rss version="2.0">
+                <channel>
+                    <title>Channel Title</title>
+                    <link>https://test.test</link>
+
+                    <description>Sample description</description>
+                    <textinput>
+                        <title>Title</title>
+                        <description>Search Google</description>
+                        <link>https://test.test/foo</link>
+                        <name>Name</name>
+                    </textinput>
+                </channel>
+            </rss>
+        """
+        ).parse()
+
+        self.assertEqual(given.textInput.name, "Name")
+        self.assertEqual(given.textInput.title, "Title")
+        self.assertEqual(given.textInput.link, "https://test.test/foo")
+        self.assertEqual(given.textInput.description, "Search Google")

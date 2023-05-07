@@ -37,6 +37,22 @@ class Cloud(NamedTuple):
     port: int
 
 
+class TextInput(NamedTuple):
+    description: str
+    name: str
+    link: str
+    title: str
+
+
+class Image(NamedTuple):
+    link: str
+    title: str
+    url: str
+    description: str | None
+    width: int
+    height: int
+
+
 class FeedChannel(NamedTuple):
     title: str
     link: str
@@ -56,8 +72,8 @@ class FeedChannel(NamedTuple):
     pubDate: datetime | None
     lastBuildDate: datetime | None
     categories: list[Category] | None  # second str is an URL, sort of
-    image: None  # TODO
-    textinput: None  # TODO
+    image: Image | None
+    textInput: TextInput | None
 
     # PICS rating. Not sure what goes into or if has attrs since not even the
     # w3cshools has an entriy about

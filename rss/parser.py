@@ -64,7 +64,7 @@ class RssParser:
             categories=self._parse_categories(channel_element),
             cloud=self._parse_cloud(channel_element.select_one("|cloud")),
             image=self._parse_image(channel_element.select_one("|image")),
-            textinput=self._parse_textinput(channel_element.select_one("|textinput")),
+            textInput=self._parse_textinput(channel_element.select_one("|textinput")),
             items={},
         )
 
@@ -86,12 +86,32 @@ class RssParser:
         )
 
     def _parse_image(self, image_element):
-        # TODO: https://www.w3schools.com/xml/rss_tag_image.asp
-        return None
+        if not image_element:
+            return None
+
+        # The image must be of type GIF, JPEG or PNG
+        return model.Image(
+            # Required
+            link=image_element.select_one("link").text,
+            url=image_element.select_one("url").text,
+            title=image_element.select_one("title").text,
+            description=self._get_one_or_none(image_element, "|description"),
+            # Optional. Defines the height of the image. Default is 31. Maximum value is 400
+            height=int(self._get_one_or_none(image_element, "|height") or 31),
+            # Optional. Defines the width of the image. Default is 88. Maximum value is 144
+            width=int(self._get_one_or_none(image_element, "|width") or 88),
+        )
 
     def _parse_textinput(self, textinput_element):
-        # TODO: https://www.w3schools.com/xml/rss_tag_textinput.asp
-        return None
+        if not textinput_element:
+            return None
+
+        return model.TextInput(
+            description=textinput_element.select_one("description").text,
+            name=textinput_element.select_one("name").text,
+            link=textinput_element.select_one("link").text,
+            title=textinput_element.select_one("title").text,
+        )
 
     def _parse_items(self):
         # A channel may contain any number of <item>s. An item may represent a "story" -- much
