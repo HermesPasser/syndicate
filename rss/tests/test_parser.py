@@ -282,7 +282,7 @@ class RssParserTest(unittest.TestCase):
         """
         ).parse()
 
-        self.assertEqual(given.textInput.name, "Name")
-        self.assertEqual(given.textInput.title, "Title")
-        self.assertEqual(given.textInput.link, "https://test.test/foo")
-        self.assertEqual(given.textInput.description, "Search Google")
+        self.assertEqual(given.text_input.name, "Name")
+        self.assertEqual(given.text_input.title, "Title")
+        self.assertEqual(given.text_input.link, "https://test.test/foo")
+        self.assertEqual(given.text_input.description, "Search Google")

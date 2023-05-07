@@ -30,7 +30,7 @@ class FeedItem(NamedTuple):
 
 
 class Cloud(NamedTuple):
-    registerProcedure: str
+    register_procedure: str
     protocol: str
     domain: str
     path: int
@@ -61,19 +61,19 @@ class FeedChannel(NamedTuple):
 
     language: str | None
     copyright: str | None
-    managingEditor: str | None
-    webMaster: str | None
+    managing_editor: str | None
+    webmaster: str | None
     generator: str | None
     docs: str | None
     ttl: int | None
-    skipHours: int | None
-    skipDays: int | None
+    skip_hours: int | None
+    skip_days: int | None
     cloud: Cloud | None
-    pubDate: datetime | None
-    lastBuildDate: datetime | None
+    pub_date: datetime | None
+    last_build_date: datetime | None
     categories: list[Category] | None  # second str is an URL, sort of
     image: Image | None
-    textInput: TextInput | None
+    text_input: TextInput | None
 
     # PICS rating. Not sure what goes into or if has attrs since not even the
     # w3cshools has an entriy about

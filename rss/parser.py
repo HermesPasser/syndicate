@@ -45,24 +45,24 @@ class RssParser:
             # The channel MAY contain each of the following OPTIONAL elements:
             language=self._get_one_or_none(channel_element, "|language"),
             copyright=self._get_one_or_none(channel_element, "|copyright"),
-            managingEditor=self._get_one_or_none(channel_element, "|managingEditor"),
-            webMaster=self._get_one_or_none(channel_element, "|webMaster"),
+            managing_editor=self._get_one_or_none(channel_element, "|managingEditor"),
+            webmaster=self._get_one_or_none(channel_element, "|webMaster"),
             generator=self._get_one_or_none(channel_element, "|generator"),
             docs=self._get_one_or_none(channel_element, "|docs"),
             rating=self._get_one_or_none(channel_element, "|rating"),
             ttl=self._get_one_or_none(channel_element, "|ttl", cast_to=int),
-            skipHours=self._get_one_or_none(channel_element, "|skipHours", cast_to=int),
-            skipDays=self._get_one_or_none(channel_element, "|skipDays", cast_to=int),
-            pubDate=self._get_one_or_none(
+            skip_hours=self._get_one_or_none(channel_element, "|skipHours", cast_to=int),
+            skip_days=self._get_one_or_none(channel_element, "|skipDays", cast_to=int),
+            pub_date=self._get_one_or_none(
                 channel_element, "|pubDate", cast_to=dateutil_parser.parse
             ),
-            lastBuildDate=self._get_one_or_none(
+            last_build_date=self._get_one_or_none(
                 channel_element, "|lastBuildDate", cast_to=dateutil_parser.parse
             ),
             categories=self._parse_categories(channel_element),
             cloud=self._parse_cloud(channel_element.select_one("|cloud")),
             image=self._parse_image(channel_element.select_one("|image")),
-            textInput=self._parse_textinput(channel_element.select_one("|textinput")),
+            text_input=self._parse_textinput(channel_element.select_one("|textinput")),
             items={},
         )
 
@@ -79,7 +79,7 @@ class RssParser:
             path=cloud_element.get("path"),
             # this should be an enumeration since there is only 3 possible values
             protocol=cloud_element.get("protocol"),
-            registerProcedure=cloud_element.get("registerProcedure"),
+            register_procedure=cloud_element.get("registerProcedure"),
             port=int(cloud_element.get("port")),
         )
 
