@@ -13,9 +13,9 @@ class RssParserTest(unittest.TestCase):
 
     def assertNamedtupleEqual(self, t0, t1):
         # We _could_ compare the tuples bare but considering its length,
-        # the diff would be truncated making seeing the actuall field
-        # difference that makes the test fail impossible to see, so we
-        # format with each field in one line.
+        # the diff would be truncated making seeing the actual field
+        # difference that makes the test fail difficult to visualize,
+        # so we format with each field in one line.
         self.assertEqual(pformat(t0._asdict()), pformat(t1._asdict()))
 
     def test_can_parse_channel_with_only_required_elements(self):
