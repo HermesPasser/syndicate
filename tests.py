@@ -1,6 +1,7 @@
 import unittest
 from syndicate import ChannelList, uuid_from_url
-from rss.tests.test_parser import *
+from rss.parser.tests.test_document import *
+from rss.parser.tests.test_item import *
 
 
 class ChannelListTest(unittest.TestCase):
