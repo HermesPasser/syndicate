@@ -1,6 +1,6 @@
 from dateutil import parser as dateutil_parser
-from bs4 import BeautifulSoup
 from rss import model
+from xml.parser import XmlParser
 
 # TODO: move item parsing for its own subclass since we'll need to test it
 #      so it shouldn't remain as an private method.
@@ -223,7 +223,7 @@ class RssParser:
         return categories
 
     def parse(self):
-        self._root = BeautifulSoup(self._xml_content, features="lxml-xml")
+        self._root = XmlParser.parse(self._xml_content)
         channel = self._parse_channel()
         for item in self._parse_items():
             channel.items[item.guid[0]] = item
