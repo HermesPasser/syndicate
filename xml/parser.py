@@ -1,5 +1,8 @@
 from __future__ import annotations
+from typing import TypeVar
 from bs4 import BeautifulSoup
+
+T = TypeVar("T")
 
 
 class XmlParser:
@@ -26,6 +29,14 @@ class XmlParser:
         def select_one(self, selector: str) -> XmlParser.XmlDocument | None:
             if node := self._node.select_one(self._prepare_selector(selector)):
                 return type(self)(node)
+
+            return None
+
+        def select_content(self, selector: str, cast_to: T = None) -> T | None:
+            if item := self._node.select_one(self._prepare_selector(selector)):
+                if cast_to:
+                    return cast_to(item.text)
+                return item.text
 
             return None
 
