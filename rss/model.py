@@ -76,5 +76,5 @@ class FeedChannel(NamedTuple):
     text_input: TextInput | None
 
     # PICS rating. Not sure what goes into or if has attrs since not even the
-    # w3cshools has an entriy about
+    # w3cshools has an entry about
     rating: str | None
