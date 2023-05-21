@@ -1,7 +1,7 @@
 from dateutil import parser as dateutil_parser
 from rss import model
 from rss.parser.category import RssCategoryParser
-from xml.parser import XmlParser
+from xml_parser.parser import XmlParser
 
 
 class RssItemParser:
