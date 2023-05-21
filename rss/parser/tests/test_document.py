@@ -109,3 +109,65 @@ class RssParserTest(RssParserBaseTest):
         self.assertEqual(given.text_input.title, "Title")
         self.assertEqual(given.text_input.link, "https://test.test/foo")
         self.assertEqual(given.text_input.description, "Search Google")
+
+    def test_parse_channel_items(self):
+        given = RssParser(
+            """
+            <rss version="2.0">
+                <channel>
+                    <title>Channel Title</title>
+                    <link>https://test.test</link>
+                    <description>Sample description</description>
+					<item>
+                        <title>Item Title</title>
+                        <link>http://test.test</link>
+                        <guid>http://test.test/0000</guid>
+                        <description>description</description>
+                    </item>
+                    <item>
+                        <title>Item2Title</title>
+                        <link>http://test.two</link>
+                        <guid>http://test.two/0001</guid>
+                        <description>description of item 2</description>
+                    </item>
+                </channel>
+            </rss>
+        """
+        ).parse()
+
+        expected = self.namedtuple_with_optional(
+            model.FeedChannel,
+            {
+                "title": "Channel Title",
+                "link": "https://test.test",
+                "description": "Sample description",
+                "categories": [],
+                "items": {
+                    "http://test.test/0000": self.namedtuple_with_optional(
+                        model.FeedItem,
+                        {
+                            "title": "Item Title",
+                            "link": "http://test.test",
+                            "description": "description",
+                            "guid": ("http://test.test/0000", True),
+                            "categories": [],
+                            "errors": [],
+                        },
+                    ),
+                    "http://test.two/0001": self.namedtuple_with_optional(
+                        model.FeedItem,
+                        {
+                            "title": "Item2Title",
+                            "link": "http://test.two",
+                            "description": "description of item 2",
+                            "guid": ("http://test.two/0001", True),
+                            "categories": [],
+                            "errors": [],
+                        },
+                    ),
+                },
+            },
+        )
+
+        self.assertEqual(len(given.items), 2)
+        self.assertNamedtupleEqual(given, expected)
