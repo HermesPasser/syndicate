@@ -1,5 +1,5 @@
 from dateutil import parser as dateutil_parser
-from xml.parser import XmlParser
+from xml_parser.parser import XmlParser
 from rss import model
 from rss.parser.item import RssItemParser
 from rss.parser.category import RssCategoryParser

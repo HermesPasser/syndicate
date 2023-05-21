@@ -1,5 +1,5 @@
 from rss import model
-from xml.parser import XmlParser
+from xml_parser.parser import XmlParser
 
 
 class RssCategoryParser:

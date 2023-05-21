@@ -2,7 +2,7 @@ from rss import model
 from rss.parser import RssParser
 from rss.parser.item import RssItemParser
 from rss.parser.tests.test_base import RssParserBaseTest
-from xml.parser import XmlParser
+from xml_parser.parser import XmlParser
 
 
 class RssParserItemTest(RssParserBaseTest):
