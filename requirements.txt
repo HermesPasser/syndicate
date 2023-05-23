@@ -1,6 +1,6 @@
 certifi==2022.9.24
 beautifulsoup4==4.11.2
-requests==2.28.1
+requests==2.31.0
 PyQt5==5.15.6
 PyQt5-Qt5==5.15.2
 PyQt5-sip==12.9.1
