@@ -23,7 +23,7 @@ class RssParserTest(RssParserBaseTest):
                 "title": "Channel Title",
                 "link": "https://test.test",
                 "description": "Sample description",
-                "categories": [],
+                "categories": set(),
                 "items": {},
             },
         )
@@ -141,7 +141,7 @@ class RssParserTest(RssParserBaseTest):
                 "title": "Channel Title",
                 "link": "https://test.test",
                 "description": "Sample description",
-                "categories": [],
+                "categories": set(),
                 "items": {
                     "http://test.test/0000": self.namedtuple_with_optional(
                         model.FeedItem,
@@ -150,7 +150,7 @@ class RssParserTest(RssParserBaseTest):
                             "link": "http://test.test",
                             "description": "description",
                             "guid": ("http://test.test/0000", True),
-                            "categories": [],
+                            "categories": set(),
                             "errors": [],
                         },
                     ),
@@ -161,7 +161,7 @@ class RssParserTest(RssParserBaseTest):
                             "link": "http://test.two",
                             "description": "description of item 2",
                             "guid": ("http://test.two/0001", True),
-                            "categories": [],
+                            "categories": set(),
                             "errors": [],
                         },
                     ),

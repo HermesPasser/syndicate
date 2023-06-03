@@ -7,7 +7,7 @@ class RssCategoryParser:
         self._root = root
 
     def parse(self):
-        categories = []
+        categories = set()
 
         for category_element in self._root.select("category"):
             # It has one optional attribute, domain, a string that identifies a categorization
@@ -18,6 +18,6 @@ class RssCategoryParser:
             # hierarchiclocation in the indicated taxonomy. Processors may establish conventions
             # for theinterpretation of categories.
             for cat in category_element.text.split("/"):
-                categories.append(model.Category(domain=domain, name=cat))
+                categories.add(model.Category(domain=domain, name=cat))
 
         return categories

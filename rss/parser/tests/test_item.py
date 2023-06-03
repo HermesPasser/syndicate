@@ -30,7 +30,7 @@ class RssParserItemTest(RssParserBaseTest):
                 "link": "http://test.test",
                 "description": "description",
                 "guid": ("http://test.test/0000", True),
-                "categories": [],
+                "categories": set(),
                 "errors": [],
             },
         )
