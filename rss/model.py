@@ -24,7 +24,7 @@ class FeedItem(NamedTuple):
     source: tuple[str, str] | None  # second item is an URL
     pub_date: datetime | None
     enclosure: Enclosure | None
-    categories: list[Category] | None  # second str is an URL, sort of
+    categories: set[Category] | None  # second str is an URL, sort of
 
     errors: list[str]  # list of errors parsing the item
 
@@ -71,7 +71,7 @@ class FeedChannel(NamedTuple):
     cloud: Cloud | None
     pub_date: datetime | None
     last_build_date: datetime | None
-    categories: list[Category] | None  # second str is an URL, sort of
+    categories: set[Category] | None  # second str is an URL, sort of
     image: Image | None
     text_input: TextInput | None
 
