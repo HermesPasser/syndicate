@@ -103,7 +103,7 @@ class RssParser:
             title=textinput_element.select_one("title").text,
         )
 
-    def _parse_items(self):
+    def _parse_items(self) -> list[model.FeedItem]:
         # A channel may contain any number of <item>s.
         items = []
 
@@ -116,6 +116,7 @@ class RssParser:
         self._root = XmlParser.parse(self._xml_content)
         channel = self._parse_channel()
         for item in self._parse_items():
+            # TODO: guid may be null
             channel.items[item.guid[0]] = item
 
         return channel
