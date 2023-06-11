@@ -1,5 +1,6 @@
 from rss.model import Cloud, FeedChannel, TextInput, Image
 from aggregator.dao.rss.channel_category import ChannelCategoryDao
+from aggregator.dao.rss.item import ItemDao
 from aggregator.connection import Connection
 
 
@@ -7,6 +8,7 @@ class ChannelDao:
     def __init__(self, connection=Connection.instance):
         self.connection = connection
         self.channel_category = ChannelCategoryDao()
+        self.item = ItemDao()
 
     def migrate(self):
         Connection.register_complex_type("textinput", TextInput)
@@ -39,6 +41,7 @@ class ChannelDao:
         );"""
         )
 
+        self.item.migrate()
         self.channel_category.migrate()
 
     def insert(self, channel: FeedChannel):
@@ -55,20 +58,31 @@ class ChannelDao:
             tuple(values),
         )
 
+        self.item.insert_many(channel)
         self.channel_category.insert_many(channel)
 
-    def _build(self, item: dict, categories):
-        return FeedChannel(**item, items={}, categories=set(categories))
+    def _build(self, item: dict, categories: list, feed_items: list):
+        # TODO: guid may be null
+        dict_items = { item.guid[0]: item for item in feed_items}
+        return FeedChannel(**item, items=dict_items, categories=set(categories))
 
     def select_all(self):
         cursor = self.connection.execute("SELECT * FROM channel;")
         return (
-            self._build(item, self.channel_category.select_many(item["title"]))
+            self._build(
+                item,
+                self.channel_category.select_many(item["title"]),
+                self.item.select_many(item["title"])
+            )
             for item in cursor
         )
 
     def delete(self, channel: FeedChannel):
         self.channel_category.delete_many(channel)
+        # NOTE: FeedChannel.items is not used since we may not
+        #       want to have it populated with all the existing items
+        #       that are in the db.
+        self.item.delete_many(self.item.select_many(channel))
         self.connection.execute(
             "DELETE FROM channel WHERE title = ?;",
             (channel.title,),
