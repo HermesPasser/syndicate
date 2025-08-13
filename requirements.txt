@@ -1,4 +1,4 @@
-certifi==2023.7.22
+certifi==2024.7.4
 beautifulsoup4==4.11.2
 requests==2.32.4
 PyQt5==5.15.6
