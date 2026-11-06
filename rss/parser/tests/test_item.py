@@ -10,8 +10,7 @@ class RssParserItemTest(RssParserBaseTest):
         return RssItemParser(XmlParser.parse(content)).parse()
 
     def test_can_parse_channel_item_with_only_required_elements(self):
-        given = self.parse_item(
-            """
+        given = self.parse_item("""
             <rss version="2.0">
 				<item>
 					<title>Item Title</title>
@@ -20,8 +19,7 @@ class RssParserItemTest(RssParserBaseTest):
 					<description>description</description>
 				</item>
             </rss>
-        """
-        )
+        """)
 
         expected = self.namedtuple_with_optional(
             model.FeedItem,
@@ -38,8 +36,7 @@ class RssParserItemTest(RssParserBaseTest):
         self.assertNamedtupleEqual(given, expected)
 
     def test_parsing_channel_item_does_not_overshadow_element_with_xmlns(self):
-        given = self.parse_item(
-            """
+        given = self.parse_item("""
 			<rss xmlns:atom="http://www.w3.org/2005/Atom" version="2.0">
 				<item>
 					<title>Item Title</title>
@@ -49,13 +46,11 @@ class RssParserItemTest(RssParserBaseTest):
 					<description>description</description>
 				</item>
 			</rss>
-		"""
-        )
+		""")
         self.assertEqual(given.link, "http://test.test")
 
     def test_parsing_channel_item_uses_link_as_guid_fallback(self):
-        given = self.parse_item(
-            """
+        given = self.parse_item("""
 				<rss version="2.0">
 					<item>
 						<title>Item Title</title>
@@ -63,16 +58,14 @@ class RssParserItemTest(RssParserBaseTest):
 						<description>description</description>
 					</item>
 				</rss>
-			"""
-        )
+			""")
 
         link = "http://test.test"
         self.assertEqual(given.link, link)
         self.assertEqual(given.guid, (link, False))
 
     def test_parsing_channel_item_guid_permalink_as_default(self):
-        given = self.parse_item(
-            """
+        given = self.parse_item("""
             <rss version="2.0">
 				<item>
 					<title>Item Title</title>
@@ -81,15 +74,13 @@ class RssParserItemTest(RssParserBaseTest):
 					<description>description</description>
 				</item>
             </rss>
-        """
-        )
+        """)
 
         item_id = "http://test.test/0000"
         self.assertEqual(given.guid, (item_id, True))
 
     def test_parsing_channel_item_guid_permalink(self):
-        given = self.parse_item(
-            """
+        given = self.parse_item("""
             <rss version="2.0">
 				<item>
 					<title>Item Title</title>
@@ -98,15 +89,13 @@ class RssParserItemTest(RssParserBaseTest):
 					<description>description</description>
 				</item>
             </rss>
-        """
-        )
+        """)
 
         item_id = "http://test.test/0000"
         self.assertEqual(given.guid, (item_id, True))
 
     def test_parsing_channel_item_guid_not_permalink(self):
-        given = self.parse_item(
-            """
+        given = self.parse_item("""
             <rss version="2.0">
 				<item>
 					<title>Item Title</title>
@@ -115,8 +104,7 @@ class RssParserItemTest(RssParserBaseTest):
 					<description>description</description>
 				</item>
             </rss>
-        """
-        )
+        """)
 
         item_id = "http://test.test/0000"
         self.assertEqual(given.guid, (item_id, False))

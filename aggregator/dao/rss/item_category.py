@@ -11,16 +11,14 @@ class ItemCategoryDao:
 
     def migrate(self):
         self.category.migrate()
-        self.connection.execute(
-            """
+        self.connection.execute("""
             CREATE TABLE IF NOT EXISTS item_category(
                 item_id TEXT NOT NULL,
                 category feedcategory NOT NULL,
                 PRIMARY KEY(item_id, category),
                 FOREIGN KEY(item_id) REFERENCES item(link),
                 FOREIGN KEY(category) REFERENCES category(category)
-        );"""
-        )
+        );""")
 
     def insert_many(self, item: FeedItem):
         self.category.insert_many(item.categories)
@@ -44,10 +42,10 @@ class ItemCategoryDao:
                 LEFT JOIN item
                     ON item.link = item_category.item_id
                 WHERE item_category.item_id = ?
-        """, (item_id,),
+        """,
+            (item_id,),
         )
         return (list(item.values())[0] for item in cursor)
-
 
     def delete_many(self, item: FeedItem):
         self.connection.execute(

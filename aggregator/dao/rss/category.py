@@ -8,12 +8,10 @@ class CategoryDao:
 
     def migrate(self):
         Connection.register_complex_type("feedcategory", Category)
-        self.connection.execute(
-            """
+        self.connection.execute("""
             CREATE TABLE IF NOT EXISTS category(
                 category feedcategory PRIMARY KEY
-        );"""
-        )
+        );""")
 
     def insert_many(self, categories: Category):
         if len(categories) > 0:
