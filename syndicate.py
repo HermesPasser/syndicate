@@ -38,7 +38,6 @@ DB_FOLDER = Path.home().joinpath("syndicate")
 DB_FILE = DB_FOLDER.joinpath("syndicate.db")
 DB_FOLDER.mkdir(exist_ok=True)
 
-DB_FOLDER.mkdir(exist_ok=True)
 
 # FIXME: folder need to be created
 class ChannelList:
@@ -203,7 +202,7 @@ class ChannelList:
 
 
 def mili_to_date(float):
-    return datetime.fromtimestamp(float)
+    return datetime.datetime.fromtimestamp(float)
 
 
 def str_date_to_mili(str_date: str) -> int:
