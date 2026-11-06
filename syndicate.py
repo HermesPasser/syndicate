@@ -12,6 +12,7 @@ import requests
 
 from rss.parser import RssParser
 
+
 def uuid_from_url(url):
     return str(uuid.uuid3(uuid.NAMESPACE_URL, url))
 
@@ -88,18 +89,15 @@ class ChannelList:
         self._create_db()
 
     def _create_db(self):
-        self.cursor.execute(
-            f"""
+        self.cursor.execute(f"""
 			CREATE TABLE IF NOT EXISTS {self.channel_table_name} (
 				id 		VARCHAR(36) NOT NULL PRIMARY KEY,
 				name	VARCHAR(30) NOT NULL,
 				link  	VARCHAR(120)
 			);
-		"""
-        )
+		""")
 
-        self.cursor.execute(
-            f"""
+        self.cursor.execute(f"""
 			CREATE TABLE IF NOT EXISTS {self.item_table_name} (
 				id 		VARCHAR(36) NOT NULL PRIMARY KEY,
 				title 	VARCHAR(160) NOT NULL,
@@ -110,8 +108,7 @@ class ChannelList:
 				channel	VARCHAR(36) NOT NULL,
 				FOREIGN KEY(channel) REFERENCES {self.channel_table_name}(id)
 			);
-		"""
-        )
+		""")
         self.conn.commit()
 
     def subscribe(self, callback):
@@ -229,8 +226,7 @@ def parse_rss(feed, content, url, channel_name=""):
             channel_name, url
         )  # feed's url, not the embeded link inside of it
 
-
-    for  item in channel.items.values():
+    for item in channel.items.values():
         feed.add_feed_item(
             item.title,
             item.description,

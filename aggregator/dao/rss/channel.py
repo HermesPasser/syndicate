@@ -15,8 +15,7 @@ class ChannelDao:
         Connection.register_complex_type("image", Image)
         Connection.register_complex_type("cloud", Cloud)
 
-        self.connection.execute(
-            """
+        self.connection.execute("""
             CREATE TABLE IF NOT EXISTS channel(
                 title TEXT NOT NULL PRIMARY KEY,
                 link TEXT NOT NULL,
@@ -38,8 +37,7 @@ class ChannelDao:
                 last_build_date datetime,
                 image image,
                 text_input textinput
-        );"""
-        )
+        );""")
 
         self.item.migrate()
         self.channel_category.migrate()
@@ -63,7 +61,7 @@ class ChannelDao:
 
     def _build(self, item: dict, categories: list, feed_items: list):
         # TODO: guid may be null
-        dict_items = { item.guid[0]: item for item in feed_items}
+        dict_items = {item.guid[0]: item for item in feed_items}
         return FeedChannel(**item, items=dict_items, categories=set(categories))
 
     def select_all(self):
@@ -72,7 +70,7 @@ class ChannelDao:
             self._build(
                 item,
                 self.channel_category.select_many(item["title"]),
-                self.item.select_many(item["title"])
+                self.item.select_many(item["title"]),
             )
             for item in cursor
         )

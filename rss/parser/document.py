@@ -4,7 +4,6 @@ from rss import model
 from rss.parser.item import RssItemParser
 from rss.parser.category import RssCategoryParser
 
-
 # https://www.rssboard.org/rss-specification, https://www.w3schools.com/xml/xml_rss.asp
 
 

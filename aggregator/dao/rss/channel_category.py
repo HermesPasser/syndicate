@@ -11,16 +11,14 @@ class ChannelCategoryDao:
 
     def migrate(self):
         self.category.migrate()
-        self.connection.execute(
-            """
+        self.connection.execute("""
             CREATE TABLE IF NOT EXISTS channel_category(
                 channel_title TEXT NOT NULL,
                 category feedcategory NOT NULL,
                 PRIMARY KEY(channel_title, category),
                 FOREIGN KEY(channel_title) REFERENCES channel(title),
                 FOREIGN KEY(category) REFERENCES category(category)
-        );"""
-        )
+        );""")
 
     def insert_many(self, channel: FeedChannel):
         self.category.insert_many(channel.categories)
