@@ -6,7 +6,7 @@ from aggregator.connection import Connection
 class ItemDao:
     def __init__(self, connection=Connection.instance):
         self.connection = connection
-        self.item_category = ItemCategoryDao()
+        self.item_category = ItemCategoryDao(connection)
 
     def migrate(self):
         Connection.register_complex_type("enclosure", Enclosure)
