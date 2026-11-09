@@ -7,8 +7,8 @@ from aggregator.connection import Connection
 class ChannelDao:
     def __init__(self, connection=Connection.instance):
         self.connection = connection
-        self.channel_category = ChannelCategoryDao()
-        self.item = ItemDao()
+        self.channel_category = ChannelCategoryDao(connection)
+        self.item = ItemDao(connection)
 
     def migrate(self):
         Connection.register_complex_type("textinput", TextInput)

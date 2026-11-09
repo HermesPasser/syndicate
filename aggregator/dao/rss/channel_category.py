@@ -7,7 +7,7 @@ from aggregator.connection import Connection
 class ChannelCategoryDao:
     def __init__(self, connection=Connection.instance):
         self.connection = connection
-        self.category = CategoryDao()
+        self.category = CategoryDao(connection)
 
     def migrate(self):
         self.category.migrate()
