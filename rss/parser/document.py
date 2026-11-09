@@ -15,12 +15,19 @@ class RssParser:
         self._root = None
 
     @property
+    def xml(self):
+        return self._xml_content
+
+    @xml.setter
     def xml(self, value: str):
         self._xml_content = value
 
     def _parse_channel(self):
+        assert self._root
+
         # TODO: make this a property so we dont need to pass it everywhere
         channel_element = self._root.select_one("channel")
+        assert channel_element
 
         # https://www.rssboard.org/rss-specification#requiredChannelElements
         # This element is REQUIRED and MUST contain three child elements:

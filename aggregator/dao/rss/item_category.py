@@ -1,4 +1,4 @@
-from typing import Generator
+from collections.abc import Generator
 from rss.model import FeedItem, Category
 from aggregator.dao.rss.category import CategoryDao
 from aggregator.connection import Connection
