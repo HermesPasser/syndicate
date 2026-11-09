@@ -1,3 +1,6 @@
+from collections.abc import Iterable
+from datetime import datetime
+
 from rss.model import FeedItem, FeedChannel, Enclosure
 from aggregator.dao.rss.item_category import ItemCategoryDao
 from aggregator.connection import Connection
@@ -47,11 +50,30 @@ class ItemDao:
 
         self.item_category.insert_many(item)
 
-    def insert_many(self, channel: FeedChannel):
-        for item in channel.items.values():
-            self.insert(item, channel.title)
+    def date_of_last_item(self, channel_name: str) -> datetime | None:
+        result = self.connection.execute(
+            """
+            SELECT pub_date FROM item 
+            WHERE channel_title = ? AND pub_date IS NOT NULL
+            ORDER BY pub_date DESC LIMIT 1
+        """,
+            (channel_name,),
+        ).fetchone()
 
-    def _build(self, item: dict, categories):
+        if result:
+            return result["pub_date"]
+
+        return None
+
+    def insert_many(self, channel: FeedChannel):
+        self.insert_many_into_channel(channel.title, channel.items.values())
+
+    def insert_many_into_channel(self, channel_title: str, items: Iterable[FeedItem]):
+        for item in items:
+            self.insert(item, channel_title)
+
+    @classmethod
+    def build(cls, item: dict, categories):
         del item["channel_title"]
         return FeedItem(**item, errors=[], categories=set(categories))
 
@@ -64,7 +86,7 @@ class ItemDao:
             "SELECT * FROM item WHERE channel_title = ?;", (title,)
         )
         return (
-            self._build(item, self.item_category.select_many(item["link"]))
+            self.build(item, self.item_category.select_many(item["link"]))
             for item in cursor
         )
 

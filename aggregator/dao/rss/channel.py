@@ -75,6 +75,24 @@ class ChannelDao:
             for item in cursor
         )
 
+    def get(self, channel_name: str):
+        cursor = self.connection.execute(
+            "SELECT * FROM channel WHERE title = ?;", (channel_name,)
+        )
+
+        result = cursor.fetchone()
+        if not result:
+            return None
+
+        channel = result
+        return (
+            self._build(
+                channel,
+                self.channel_category.select_many(channel["title"]),
+                self.item.select_many(channel["title"]),
+            )
+        )
+
     def delete(self, channel: FeedChannel):
         self.channel_category.delete_many(channel)
         # NOTE: FeedChannel.items is not used since we may not
