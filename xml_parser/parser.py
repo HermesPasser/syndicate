@@ -17,7 +17,7 @@ class XmlParser:
         def text(self):
             return self._node.text
 
-        def get(self, attr: str, default: str = None):
+        def get(self, attr: str, default: str | None = None):
             return self._node.get(attr, default)
 
         def _prepare_selector(self, selector):
