@@ -1,15 +1,12 @@
 import datetime
-import urllib.request as req
 from pathlib import Path
 import sqlite3
-import certifi
-import copy
-import json
 import uuid
-import re
 import dateutil
 import requests
 
+from aggregator.connection import Connection
+from aggregator.dao.rss.channel import ChannelDao
 from rss.parser import RssParser
 
 
@@ -46,9 +43,18 @@ class ChannelList:
         self.db_file = db_file_name
         self.conn = sqlite3.connect(self.db_file)
         self.cursor = self.conn.cursor()
-        self.channel_table_name = "channel"
-        self.item_table_name = "item"
+        # TODO: feed so it may not break the new models until
+        #       everything is fixed. Those tables will change
+        #       and the duplicated stuff will be removed
+        self.channel_table_name = "feed_channel"
+        self.item_table_name = "feed_item"
         self._callback = None
+
+    # TODO: get rid of it
+    def channel_link(self, channel_name: str):
+        self.cursor.execute(f"SELECT link from {self.channel_table_name} WHERE name = ?;", (channel_name,))
+        result = self.cursor.fetchone()
+        return result[0] if result else None
 
     @property
     def channel_links(self):
@@ -213,12 +219,17 @@ def str_date_to_mili(str_date: str) -> int:
 
 def fetch_rss(url):
     # TODO: error handling when is not 200
-    return requests.get(url, timeout=2).text
+    response = requests.get(url, timeout=2)
+    response.raise_for_status()
+    return response.text
 
 
-def parse_rss(feed, content, url, channel_name=""):
-    channel = RssParser(content).parse()
+def parse_rss(feed: ChannelList, xml_content: str, url: str, channel_name: str = ""):
+    """Factory that parse the xml contents and upload all to the database"""
 
+    channel = RssParser(xml_content).parse()
+
+    # Upload the old models
     ch_id = uuid_from_url(url)
     channel_name = channel_name or channel.title
     if not feed.channel_exists(ch_id):
@@ -235,3 +246,21 @@ def parse_rss(feed, content, url, channel_name=""):
             item.pub_date.timestamp() if item.pub_date else 0,
             ch_id,
         )
+
+    # TODO: wip  Upload the new models, so we can merge the old way of read/unread and the
+    #            new models that have all that sweet extra information
+    dao = ChannelDao(Connection(str(DB_FILE)))
+    dao.insert(channel)
+
+
+def get_new_items_from_channel(url: str, after_date: datetime.datetime):
+    # TODO: save those new items in db
+
+    # TODO: add filtering to RssParser.parse()
+    #       so we dont have to parse stuff we already parsed
+    channel = RssParser(fetch_rss(url)).parse()
+    return [
+        c
+        for c in channel.items.values()
+        if c.pub_date is None or c.pub_date >= after_date
+    ]
