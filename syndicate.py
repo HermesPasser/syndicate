@@ -1,3 +1,4 @@
+from collections.abc import Callable
 import datetime
 from pathlib import Path
 import sqlite3
@@ -7,6 +8,9 @@ import requests
 
 from aggregator.connection import Connection
 from aggregator.dao.rss.channel import ChannelDao
+from aggregator.dao.rss.item import ItemDao
+from item import Item, ItemMetadataDao
+from rss.model import FeedItem
 from rss.parser import RssParser
 
 
@@ -18,25 +22,12 @@ class FeedError(Exception):
     pass
 
 
-"""
-	channels.json format:
-{
-	<uuid()>: { title: '', url: '', id: uuid() },
-	...
-}
-
-	uuid(some_channel):
-{
-	<id>: {title: '', content: '', read: false, url: '', id: '', link: '', date: '', channel: '<channel_id>' },
-	...
-}
-"""
-
 DB_FOLDER = Path.home().joinpath("syndicate")
 DB_FILE = DB_FOLDER.joinpath("syndicate.db")
 DB_FOLDER.mkdir(exist_ok=True)
 
 
+# TODO: mover channel_metadata para fora
 # FIXME: folder need to be created
 class ChannelList:
     def __init__(self, db_file_name=DB_FILE):
@@ -46,19 +37,25 @@ class ChannelList:
         # TODO: feed so it may not break the new models until
         #       everything is fixed. Those tables will change
         #       and the duplicated stuff will be removed
-        self.channel_table_name = "feed_channel"
-        self.item_table_name = "feed_item"
+        self.channel_table_name = "channel_metadata"
         self._callback = None
+
+        self.item = ItemDao(Connection(str(DB_FILE)))
+        self.item_metadata = ItemMetadataDao(Connection(str(DB_FILE)))
+        self.channel = ChannelDao(Connection(str(DB_FILE)))
 
     # TODO: get rid of it
     def channel_link(self, channel_name: str):
-        self.cursor.execute(f"SELECT link from {self.channel_table_name} WHERE name = ?;", (channel_name,))
+        self.cursor.execute(
+            f"SELECT feed_link from {self.channel_table_name} WHERE name = ?;",
+            (channel_name,),
+        )
         result = self.cursor.fetchone()
         return result[0] if result else None
 
     @property
     def channel_links(self):
-        self.cursor.execute(f"SELECT link from {self.channel_table_name}")
+        self.cursor.execute(f"SELECT feed_link from {self.channel_table_name}")
         rows = self.cursor.fetchall()
         rows = [row[0] for row in rows]
         return rows
@@ -70,55 +67,34 @@ class ChannelList:
         rows = [(row[0], row[1]) for row in rows]
         return rows
 
-    def get_feed(self, channel_id):
-        self.cursor.execute(
-            f"SELECT * FROM {self.item_table_name} WHERE channel = ?", (channel_id,)
-        )
-        rows = self.cursor.fetchall()
-
-        feed = {}
-        for row in rows:
-            id = row[0]
-            feed[id] = {
-                "title": row[1],
-                "link": row[3],
-                "id": id,
-                "date": row[4],
-                "read": bool(row[5]),
-                "content": row[2],
-                "channel": channel_id,
-            }
-
-        return feed
+    # TODO: get rid of this id in favor of title of use id in all places
+    def get_feed(self, channel_id: str):
+        title = self.cursor.execute(
+            f"SELECT name from {self.channel_table_name} WHERE id = ?", (channel_id,)
+        ).fetchone()[0]
+        return list(self.item_metadata.list(title))
 
     def open(self):
         self._create_db()
 
     def _create_db(self):
+        # TODO: add a display_name since can be edited (the old name columns still needs to be here since will be a PK)
         self.cursor.execute(f"""
 			CREATE TABLE IF NOT EXISTS {self.channel_table_name} (
-				id 		VARCHAR(36) NOT NULL PRIMARY KEY,
-				name	VARCHAR(30) NOT NULL,
-				link  	VARCHAR(120)
+				id 		    VARCHAR(36) NOT NULL PRIMARY KEY,
+				name	    VARCHAR(30) NOT NULL,
+				feed_link  	VARCHAR(120)
 			);
 		""")
 
-        self.cursor.execute(f"""
-			CREATE TABLE IF NOT EXISTS {self.item_table_name} (
-				id 		VARCHAR(36) NOT NULL PRIMARY KEY,
-				title 	VARCHAR(160) NOT NULL,
-				content VARCHAR(4000) NOT NULL,
-				link 	VARCHAR(120) NOT NULL,
-				date	DATE NOT NULL,
-				read	INTEGER DEFAULT FALSE,
-				channel	VARCHAR(36) NOT NULL,
-				FOREIGN KEY(channel) REFERENCES {self.channel_table_name}(id)
-			);
-		""")
         self.conn.commit()
 
-    def subscribe(self, callback):
+    def subscribe(self, callback: Callable[[FeedItem], None]):
         self._callback = callback
+
+    def notify(self, item: FeedItem):
+        if self._callback:
+            self._callback(item)
 
     def close(self):
         self.cursor.close()
@@ -132,72 +108,26 @@ class ChannelList:
         exists = len(self.cursor.fetchall()) == 1
         return exists
 
-    def _feed_exists(self, id, channel_id):
-        self.cursor.execute(
-            f"SELECT title FROM {self.item_table_name} WHERE id=? and channel=?",
-            (id, channel_id),
-        )
-        exists = len(self.cursor.fetchall()) == 1
-        return exists
-
-    def add_channel(self, name, url):
+    def add_channel(self, name: str, url: str):
         ch_id = uuid_from_url(url)
         if self.channel_exists(ch_id):
             raise FeedError(f'"{name}" channel (of id: {ch_id}) already exists')
 
         self.cursor.execute(
-            f"INSERT INTO {self.channel_table_name} (id, name, link) VALUES (?,?,?)",
+            f"INSERT INTO {self.channel_table_name} (id, name, feed_link) VALUES (?,?,?)",
             (ch_id, name, url),
         )
+
         self.conn.commit()
         return ch_id
 
     def add_feed_item(self, title, content, link, item_id, date, channel_id):
-        if self._feed_exists(item_id, channel_id):
-            # ignore if already exists...
-            return
+        # TODO: this is only here yet because i need to figure out what to do with the
+        #       tests that rely on it
+        ...
 
-        self.cursor.execute(
-            f"INSERT INTO {self.item_table_name} (id, title, content, link, date, channel) VALUES (?,?,?,?,?,?)",
-            (item_id, title, content, link, date, channel_id),
-        )
-        self.conn.commit()
-
-        item = {
-            "title": title,
-            "link": link,
-            "id": item_id,
-            "date": date,
-            "read": False,
-            "content": content,
-            "channel": channel_id,
-        }
-
-        # Notify of new items
-        # TODO: since this already is returning the item, maybe create a
-        # new method just to check if is a new item and notify? But
-        # in this case we should add a func only to load the items
-        # that already are on the json.
-        # NOTE: since we don't call it on another thread, if the
-        # callback does something on the thread and never
-        # returns (like  funcs calling other funcs forever..)
-        # we may encounter some troubles
-        if self._callback is not None:
-            self._callback(item)
-
-        return item
-
-    def mark_feed_item_as(self, channel_id, item_id, is_read):
-        if not self._feed_exists(item_id, channel_id):
-            raise FeedError(
-                f"Could not set feed's reading status. The item with {item_id} id does not exists"
-            )
-
-        self.cursor.execute(
-            f"UPDATE {self.item_table_name} SET read=? WHERE id=?",
-            (int(is_read), item_id),
-        )
-        self.conn.commit()
+    def mark_feed_item_as(self, item: Item, is_read: bool):
+        item.mark(is_read)
 
 
 # FIXME: it seems it doesnt add a second channel to the feed
@@ -224,7 +154,9 @@ def fetch_rss(url):
     return response.text
 
 
-def parse_rss(feed: ChannelList, xml_content: str, url: str, channel_name: str = ""):
+def parse_rss(
+    feed: ChannelList, xml_content: str, url: str, channel_name: str = "", notify=False
+):
     """Factory that parse the xml contents and upload all to the database"""
 
     channel = RssParser(xml_content).parse()
@@ -237,20 +169,14 @@ def parse_rss(feed: ChannelList, xml_content: str, url: str, channel_name: str =
             channel_name, url
         )  # feed's url, not the embeded link inside of it
 
-    for item in channel.items.values():
-        feed.add_feed_item(
-            item.title,
-            item.description,
-            item.link,
-            item.guid[0],
-            item.pub_date.timestamp() if item.pub_date else 0,
-            ch_id,
-        )
-
     # TODO: wip  Upload the new models, so we can merge the old way of read/unread and the
     #            new models that have all that sweet extra information
     dao = ChannelDao(Connection(str(DB_FILE)))
     dao.insert(channel)
+
+    if notify:
+        for item in channel.items.values():
+            feed.notify(item)
 
 
 def get_new_items_from_channel(url: str, after_date: datetime.datetime):

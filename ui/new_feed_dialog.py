@@ -4,7 +4,7 @@ import syndicate
 
 
 class NewFeedDialog(Qt.QDialog):
-    def __init__(self, feed, *args, **kwargs):
+    def __init__(self, feed: syndicate.ChannelList, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._initialize_component()
         self.xml_text = ""
@@ -33,7 +33,7 @@ class NewFeedDialog(Qt.QDialog):
             # files are huge
             # FIXME: add an option to not be notified if a new item added
             # since this will add a lot of items
-            syndicate.parse_rss(self.feed, self.xml_text, url, title)
+            syndicate.parse_rss(self.feed, self.xml_text, url, title, notify=True)
 
     def _load_clicked(self):
         url = self.edit_url.text()

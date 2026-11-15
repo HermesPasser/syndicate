@@ -1,15 +1,16 @@
-import os
 from PyQt5 import Qt, QtCore, QtGui, QtWidgets, uic
+from item import Item
+from rss.model import FeedItem
 from ui.new_feed_dialog import NewFeedDialog
 from ui.system_tray import SystemTray
-from syndicate import fetch_rss, parse_rss
+from syndicate import ChannelList, fetch_rss, parse_rss
 
 
 class Window(Qt.QMainWindow):
-    def __init__(self, feed, *args, **kwargs):
+    def __init__(self, feed: ChannelList, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.feed = feed
-        self.list_item_metadata = []  # [{}, ...]
+        self.list_item_metadata: list[Item] = []
         self.channel_list_metadata = []  # [(id, title), ...]
         self._show_notifications = True
         self._prev_rect = None
@@ -52,20 +53,18 @@ class Window(Qt.QMainWindow):
             first_channel_id = self.channel_list_metadata[0][0]
             self._load_feed(first_channel_id)
 
-            if len(self.list_item_metadata) != 0:
-                self._set_content(self.list_item_metadata[0]["content"])
+            if len(self.list_item_metadata) > 0:
+                self._set_content(self.list_item_metadata[0].item.description)
 
     def _load_feed(self, channel_id):
         # TODO: pass which tab, so it now were should load
         # when we add multiple tabs support
         self.list_item.clear()
-        self.list_item_metadata = [
-            item for _, item in self.feed.get_feed(channel_id).items()
-        ]
+        self.list_item_metadata = self.feed.get_feed(channel_id)
         for item in self.list_item_metadata:
-            self._add_list_item(item["title"], not item["read"])
+            self._add_list_item(item.item.title, not item.read)
 
-    def _on_new_item_added(self, item):
+    def _on_new_item_added(self, item: FeedItem):
         # NOTE: not wise to call _load_feed yet since
         # this method will be called when adding a new
         # channel, and there fore each new element added
@@ -75,7 +74,7 @@ class Window(Qt.QMainWindow):
         # TODO: create a custom window to list all new feeds
         # just like RSSOwl does intead of disabling the notifications
         if self._show_notifications:
-            self.tray.show_message("New item", item["title"])
+            self.tray.show_message("New item", item.title)
 
     def _set_component_font(self, comp, weight, italic):
         font = comp.font()
@@ -90,9 +89,9 @@ class Window(Qt.QMainWindow):
     def _mark_list_item_read(self, item):
         self._set_component_font(item, QtGui.QFont.Normal, True)
 
-    def _set_item_status(self, item, metaitem, is_read):
+    def _set_item_status(self, item, metaitem: Item, is_read: bool):
         """Update the read mark in the engine and in the UI"""
-        self.feed.mark_feed_item_as(metaitem["channel"], metaitem["id"], is_read)
+        self.feed.mark_feed_item_as(metaitem, is_read)
 
         if is_read:
             self._mark_list_item_read(item)
@@ -135,14 +134,12 @@ class Window(Qt.QMainWindow):
         qt_item = self.list_item.currentItem()
         title = qt_item.text()
 
-        it = filter(lambda it: it["title"] == title, self.list_item_metadata)
-        item = list(it)[0]
-        item["read"] = not item["read"]
+        item = next(i for i in self.list_item_metadata if i.item.title == title)
 
-        self._set_content(item["content"])
+        self._set_content(item.item.description)
         # FIXME: clicking is not responsive since the listwidgetitem style
         # does not consistently changes all times, whitch make it confusing
-        self._set_item_status(qt_item, item, item["read"])
+        self._set_item_status(qt_item, item, not item.read)
 
     def _new_clicked(self):
         self._show_notifications = False
@@ -155,8 +152,9 @@ class Window(Qt.QMainWindow):
         items = self.list_item.selectedItems()
         for item in items:
             # not the ideal way but i can't get the indexes of all selected items
-            it = filter(lambda it: it["title"] == item.text(), self.list_item_metadata)
-            metaitem = list(it)[0]
+            metaitem = next(
+                i for i in self.list_item_metadata if i.item.title == item.text()
+            )
             self._set_item_status(item, metaitem, True)
 
     def _mark_all_read_clicked(self):

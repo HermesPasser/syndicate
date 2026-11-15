@@ -85,12 +85,10 @@ class ChannelDao:
             return None
 
         channel = result
-        return (
-            self._build(
-                channel,
-                self.channel_category.select_many(channel["title"]),
-                self.item.select_many(channel["title"]),
-            )
+        return self._build(
+            channel,
+            self.channel_category.select_many(channel["title"]),
+            self.item.select_many(channel["title"]),
         )
 
     def delete(self, channel: FeedChannel):
