@@ -10,11 +10,10 @@ class ItemDao:
     def __init__(self, connection=Connection.instance):
         self.connection = connection
         self.item_category = ItemCategoryDao(connection)
-
-    def migrate(self):
         Connection.register_complex_type("enclosure", Enclosure)
         Connection.register_complex_type("tuple", tuple)
 
+    def migrate(self):
         self.connection.execute("""
             CREATE TABLE IF NOT EXISTS item(
                 title TEXT NOT NULL,
@@ -39,13 +38,13 @@ class ItemDao:
         del as_dict["categories"]
         del as_dict["errors"]
 
-        values = as_dict.values()
+        values = tuple(as_dict.values())
         rows = ",".join(as_dict.keys())
         placeholders = ",".join(["?"] * len(values))
 
         self.connection.execute(
             f"INSERT OR IGNORE INTO item({rows}) VALUES ({placeholders});",
-            tuple(values),
+            values,
         )
 
         self.item_category.insert_many(item)
@@ -53,7 +52,7 @@ class ItemDao:
     def date_of_last_item(self, channel_name: str) -> datetime | None:
         result = self.connection.execute(
             """
-            SELECT pub_date FROM item 
+            SELECT pub_date FROM item
             WHERE channel_title = ? AND pub_date IS NOT NULL
             ORDER BY pub_date DESC LIMIT 1
         """,

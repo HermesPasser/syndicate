@@ -5,9 +5,9 @@ from rss.model import Category
 class CategoryDao:
     def __init__(self, connection=Connection.instance):
         self.connection = connection
+        Connection.register_complex_type("feedcategory", Category)
 
     def migrate(self):
-        Connection.register_complex_type("feedcategory", Category)
         self.connection.execute("""
             CREATE TABLE IF NOT EXISTS category(
                 category feedcategory PRIMARY KEY

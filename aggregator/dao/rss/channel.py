@@ -9,11 +9,11 @@ class ChannelDao:
         self.connection = connection
         self.channel_category = ChannelCategoryDao(connection)
         self.item = ItemDao(connection)
-
-    def migrate(self):
         Connection.register_complex_type("textinput", TextInput)
         Connection.register_complex_type("image", Image)
         Connection.register_complex_type("cloud", Cloud)
+
+    def migrate(self):
 
         self.connection.execute("""
             CREATE TABLE IF NOT EXISTS channel(
