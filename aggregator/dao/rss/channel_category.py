@@ -16,8 +16,8 @@ class ChannelCategoryDao:
                 channel_title TEXT NOT NULL,
                 category feedcategory NOT NULL,
                 PRIMARY KEY(channel_title, category),
-                FOREIGN KEY(channel_title) REFERENCES channel(title),
-                FOREIGN KEY(category) REFERENCES category(category)
+                FOREIGN KEY(channel_title) REFERENCES channel(title) ON DELETE CASCADE ON UPDATE CASCADE,
+                FOREIGN KEY(category) REFERENCES category(category) ON DELETE CASCADE ON UPDATE CASCADE
         );""")
 
     def insert_many(self, channel: FeedChannel):

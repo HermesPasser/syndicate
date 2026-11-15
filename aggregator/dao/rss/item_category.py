@@ -16,8 +16,8 @@ class ItemCategoryDao:
                 item_id TEXT NOT NULL,
                 category feedcategory NOT NULL,
                 PRIMARY KEY(item_id, category),
-                FOREIGN KEY(item_id) REFERENCES item(link),
-                FOREIGN KEY(category) REFERENCES category(category)
+                FOREIGN KEY(item_id) REFERENCES item(link) ON DELETE CASCADE ON UPDATE CASCADE,
+                FOREIGN KEY(category) REFERENCES category(category) ON DELETE CASCADE ON UPDATE CASCADE
         );""")
 
     def insert_many(self, item: FeedItem):

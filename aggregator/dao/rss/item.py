@@ -28,7 +28,7 @@ class ItemDao:
                 enclosure enclosure,
 
                 channel_title TEXT NOT NULL,
-                FOREIGN KEY(channel_title) REFERENCES channel(title)
+                FOREIGN KEY(channel_title) REFERENCES channel(title) ON DELETE CASCADE ON UPDATE CASCADE
         );""")
         self.item_category.migrate()
 

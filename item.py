@@ -26,7 +26,7 @@ class Item:
             self._state.mark(self)
 
 
-# TODO: cascade delete/update
+# TODO: mover from place to DAO or something
 class ItemMetadataDao:
     def __init__(self, connection=Connection.instance):
         self.connection = connection
@@ -38,7 +38,7 @@ class ItemMetadataDao:
                 id INTEGER AUTO INCREMENT, -- we're not using the foreign as pk here in case we change that in the future
                 link TEXT NOT NULL UNIQUE,
                 read INTEGER NOT NULL DEFAULT FALSE,
-                FOREIGN KEY (link) REFERENCES "item" (link)
+                FOREIGN KEY (link) REFERENCES "item" (link) ON DELETE CASCADE ON UPDATE CASCADE
             );""")
 
         self.connection.execute("""
