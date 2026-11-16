@@ -1,3 +1,5 @@
+from collections.abc import Iterable
+
 from rss.model import Cloud, FeedChannel, TextInput, Image
 from aggregator.dao.rss.channel_category import ChannelCategoryDao
 from aggregator.dao.rss.item import ItemDao
@@ -59,7 +61,7 @@ class ChannelDao:
         self.item.insert_many(channel)
         self.channel_category.insert_many(channel)
 
-    def _build(self, item: dict, categories: list, feed_items: list):
+    def _build(self, item: dict, categories: Iterable, feed_items: Iterable):
         # TODO: guid may be null
         dict_items = {item.guid[0]: item for item in feed_items}
         return FeedChannel(**item, items=dict_items, categories=set(categories))

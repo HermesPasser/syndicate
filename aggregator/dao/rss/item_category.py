@@ -21,7 +21,11 @@ class ItemCategoryDao:
         );""")
 
     def insert_many(self, item: FeedItem):
+        if not item.categories:
+            return
+
         self.category.insert_many(item.categories)
+
         for category in item.categories:
             self.connection.execute(
                 """
@@ -52,4 +56,6 @@ class ItemCategoryDao:
             "DELETE FROM item_category WHERE item_id = ?;",
             (item.link,),
         )
-        self.category.delete_many(item.categories)
+
+        if item.categories:
+            self.category.delete_many(item.categories)

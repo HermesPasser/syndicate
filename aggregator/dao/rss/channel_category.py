@@ -21,6 +21,9 @@ class ChannelCategoryDao:
         );""")
 
     def insert_many(self, channel: FeedChannel):
+        if not channel.categories:
+            return
+
         self.category.insert_many(channel.categories)
         for category in channel.categories:
             self.connection.execute(
@@ -56,4 +59,7 @@ class ChannelCategoryDao:
         """,
             (channel.title,),
         )
-        self.category.delete_many(channel.categories)
+
+        # TODO: check if cascade resolve this
+        if channel.categories:
+            self.category.delete_many(channel.categories)

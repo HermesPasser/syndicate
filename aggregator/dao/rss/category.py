@@ -1,3 +1,5 @@
+from collections.abc import Collection
+
 from aggregator.connection import Connection
 from rss.model import Category
 
@@ -13,7 +15,7 @@ class CategoryDao:
                 category feedcategory PRIMARY KEY
         );""")
 
-    def insert_many(self, categories: Category):
+    def insert_many(self, categories: Collection[Category]):
         if len(categories) > 0:
             placeholders = ",".join(["(?)"] * len(categories))
             self.connection.execute(
@@ -21,7 +23,7 @@ class CategoryDao:
                 tuple(categories),
             )
 
-    def delete_many(self, categories: Category):
+    def delete_many(self, categories: Collection[Category]):
         for category in categories:
             self.connection.execute(
                 """

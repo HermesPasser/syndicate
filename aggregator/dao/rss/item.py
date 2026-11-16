@@ -96,6 +96,6 @@ class ItemDao:
             (item.title,),
         )
 
-    def delete_many(self, items: list[FeedItem]):
+    def delete_many(self, items: Iterable[FeedItem]):
         for item in items:
             self.delete(item)
